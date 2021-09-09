@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------
-Name: main.cpp
+Name: hugojrh_pa1.cpp
 Summary: Entry point for program.
 Notes:
 
@@ -7,9 +7,7 @@ Notes:
 --------------  --------    -------
 Hugo Mazariego  09/08/21    1.0: Made File
 -----------------------------------------------------------*/
-#include <iostream>
-#include <string>
-using namespace std;
+#include "Database.h"
 
 /// <summary>
 /// The program's entry point.
