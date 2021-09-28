@@ -7,8 +7,11 @@ DROP DATABASE db_2;
 CREATE DATABASE db_2;
 
 USE db_1;
-CREATE TABLE tbl_1 (a1 char(50), a2 varchar(20));
-CREATE TABLE tbl_1 (a3 varchar(55), a4 char(20));
+CREATE TABLE tbl_1 (a1 int, a2 varchar(20));
+CREATE TABLE tbl_1 (a3 float, a4 char(20));
+DROP TABLE tbl_1;
+DROP TABLE tbl_1;
+CREATE TABLE tbl_1 (a1 int, a2 varchar(20));
 
 .EXIT
 

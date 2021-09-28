@@ -1,6 +1,6 @@
 from Table import Table
 import os
-
+import shutil
 class Database:
     def __init__(self, args, isFile):
         self.extension = ".hdb"
@@ -38,3 +38,13 @@ class Database:
         else:
             self.tables.append(Table([userArgs, self.location], False))
             self.tableNames.append(self.tables[-1].name)
+
+    def DropTable(self, userArgs):
+        if userArgs in self.tableNames:
+            tableIndex = self.tableNames.index(userArgs)
+            tableTrash = self.tables.pop(tableIndex)
+            shutil.rmtree(tableTrash.location, True)
+            self.tableNames.pop(tableIndex)
+            print("Table {tbName} deleted.".format(tbName = userArgs))
+        else:
+            print("!Failed to delete {tbName} because it does not exist.".format(tbName = userArgs))

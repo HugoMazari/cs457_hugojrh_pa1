@@ -76,9 +76,15 @@ def Drop(userArgs):
             shutil.rmtree(databaseTrash.location, True)
             DatabaseNames.pop(databaseIndex)
             print("Database {dbName} deleted.".format(dbName = userArgs.split()[1].replace(";","")))
-
         else:
             print("!Failed to delete {dbName} because it does not exist.".format(dbName = userArgs.split()[1].replace(";","")))
+    elif userArgs.split()[0] == "table":
+        if CurrentDatabase != None:
+            Databases[CurrentDatabase].DropTable(userArgs.split()[1].replace(";",""))
+        else:
+            print("!No database selected.")
+    else:
+        print("!Failed to delete {itemName} because it is not a supported item.".format(itemName = userArgs.split()[0]))
 
 #Chooses database to focus on.
 def Use(userArgs):

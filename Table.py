@@ -42,6 +42,10 @@ class Table:
     def IdentifyTypes(self, type):
         if re.search("^((var|)char\((\d\d)\)|text)", type.lower()):
             self.types.append(type.lower())
+        elif re.search("^(big|small|)int", type.lower()):
+            self.types.append(type.lower())
+        elif re.search("(money|datetime)", type.lower()):
+            self.types.append(type.lower())
         else:
             print("!{typeName} is not a valid type.".format(typeName = type))
 
