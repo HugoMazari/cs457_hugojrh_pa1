@@ -11,7 +11,10 @@ class Database:
         if isFile:
             self.name = args[0].replace(self.extension, "")
             self.location = args[1] + "//" + args[0]
-            #tables = self.OpenTables()
+            allTables = os.listdir(self.location)
+            for table in allTables:
+                self.tables.append(Table([table, self.location], True))
+                self.tableNames.append(self.tables[-1].name)
 
         else:
             self.name = args[0].split(";")[0]

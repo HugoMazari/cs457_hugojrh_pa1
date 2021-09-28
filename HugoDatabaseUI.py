@@ -32,9 +32,9 @@ def LoadDatabaseInventory():
     if ifFile != True:
         os.mkdir(DatabaseStorage)
     else:
-        for dir, subdirs, file in os.walk(DatabaseStorage):
-            for database in subdirs:
-                Databases.append(Database([database, dir], True))
+        allDatabases = os.listdir(DatabaseStorage)
+        for database in allDatabases:
+                Databases.append(Database([database, DatabaseStorage], True))
         for database in Databases:
             DatabaseNames.append(database.name)
 
@@ -121,14 +121,17 @@ def GetUserInput(firstTime):
         userInput += input("            ...> ")
     return userInput
 
-#Function to read file commands. WIP
+#Function to read file commands.
 def ReadFile():
+    #Gets file name
     print("Please type the path of your choice of file.")
     userInput = input("Hugo's Database> ")
     while os.path.exists(userInput) != True:
         userInput = input("This file is unusable. Please try again.\n            ...> ")
+    #Opens file and reads first line
     file = open(userInput, 'r')
     fileCommand = file.readline().replace("\n", "")
+    #While file is not wanting to exit
     while fileCommand.lower() != ".exit\n":
         if re.search("^--", fileCommand.lower()) == None and fileCommand.lower() != "\n":
             SqlChoices(fileCommand.lower())

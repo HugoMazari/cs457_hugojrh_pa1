@@ -12,21 +12,31 @@ class Table:
         self.items = []
 
         if(isFile == True):
-            self.name = args.split("//")[-1].replace(self.extension,"")
-            self.location = args.replace(self.Name + self.extension, "")
-
+            self.name = args[0].replace(self.extension,"")
+            self.location = args[1] + "//" + args[0]
+            templateFile = open(self.location +"//"  + self.templateName, "r")
+            attrAndType = templateFile.readline()
+            for pair in attrAndType.split(" | "):
+                self.IdentifyTypes(pair.split()[1])
+                self.attributes.append(pair.split()[0])
             #arg = //DatabaseInventory//Database//Table.htb
 
         #User creates table.
         else:
             self.name = args[0].split()[1]
+            self.location = args[1] + "//" + self.name + self.extension
+            os.mkdir(self.location)
+            attrAndTypeString = ""
             attrAndType =  args[0].split(" (", 1)[1]
             attrAndType = re.sub("\);$", "", attrAndType)
             for pair in attrAndType.split(", "):
                 self.IdentifyTypes(pair.split()[1])
                 self.attributes.append(pair.split()[0])
-            self.location = args[1] + "//" + self.name + self.extension
-            os.mkdir(self.location)
+                attrAndTypeString += ("{tbAttr} {tbType} | ".format(tbAttr = self.attributes[-1], tbType = self.types[-1]))
+            attrAndTypeString = re.sub(" \| $", "", attrAndTypeString)
+            templateFile = open(self.location + "//" +self.templateName, "x")
+            templateFile.write(attrAndTypeString)
+            templateFile.close()
             #args = NAME (ATTR TYPE, ATTR TYPE), LOCATION
 
     def IdentifyTypes(self, type):
@@ -36,7 +46,5 @@ class Table:
             print("!{typeName} is not a valid type.".format(typeName = type))
 
 
-    #Create
-    #Drop
     #Select
     #Alter
