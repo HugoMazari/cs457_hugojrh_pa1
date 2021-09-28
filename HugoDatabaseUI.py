@@ -1,6 +1,8 @@
 from Database import Database
 import os
 import shutil
+import sys
+import re
 #Global variables
 DatabaseStorage = "Hugo-s_Database_Directory"
 CurrentDatabase = None
@@ -46,6 +48,7 @@ def Create(userArgs):
             else:
                 Databases.append(Database([userArgs.split(" ", 1)[1], DatabaseStorage], False))
                 DatabaseNames.append(Databases[-1].name)
+                print("Database {dbName} created.".format(dbName = userArgs.split()[1].replace(";","")))
         else:
             print("!Syntax Error. There are too many or too few arguments.")
     #Table creation
@@ -56,12 +59,13 @@ def Create(userArgs):
                     print("!Failed to create table {dbName} because it already exists.".format(dbName = userArgs.split()[1].replace(";","")))
                 else:
                     Databases[CurrentDatabase].CreateTable(userArgs)
+                    print("Table {dbName} created.".format(dbName = userArgs.split()[1].replace(";","")))
             else:
                 print("!Syntax Error. There are too few arguments.")
         else:
             print("!No database selected.")
     else:
-        print("!Failed to creal {itemName} because it is not a supported item.".format(itemName = userArgs.split()[0]))
+        print("!Failed to create {itemName} because it is not a supported item.".format(itemName = userArgs.split()[0]))
 
 #Drops either a database or a table.
 def Drop(userArgs):
@@ -71,6 +75,7 @@ def Drop(userArgs):
             databaseTrash = Databases.pop(databaseIndex)
             shutil.rmtree(databaseTrash.location, True)
             DatabaseNames.pop(databaseIndex)
+            print("Database {dbName} deleted.".format(dbName = userArgs.split()[1].replace(";","")))
 
         else:
             print("!Failed to delete {dbName} because it does not exist.".format(dbName = userArgs.split()[1].replace(";","")))
@@ -82,38 +87,54 @@ def Use(userArgs):
         CurrentDatabase = DatabaseNames.index(userArgs.split()[0].replace(";",""))
         print("Using database {dbName}.".format(dbName = userArgs.split()[0].replace(";","")))
     else:
-        print("!Database {dbName} does not exist.".format(dbName = userArgs.split()[0].replace(";","")))      
+        print("Cannot use {dbName} because it does not exist.".format(dbName = userArgs.split()[0].replace(";","")))
 
-
-#Function to take in user input. WIP
-def UserInput(firstTime = False):
-    userInput = GetUserInput(firstTime).lower()
-    userCommand = userInput.split(" ", 1)[0]
+def SqlChoices(commandAndArgs):
+    userCommand = commandAndArgs.split(" ", 1)[0]
     if userCommand == "quit;":
         print("\nGoodbye!\n")
+        sys.exit()
     else:
-        userArgs = userInput.split(" ", 1)[1]
+        userArgs = commandAndArgs.split(" ", 1)[1]
         if userCommand == "create":
             Create(userArgs)
         elif userCommand == "drop":
             Drop(userArgs)
         elif userCommand == "use":
             Use(userArgs)
-        UserInput()
+
+
+#Function to take in user input. WIP
+def UserInput(firstTime = False):
+    userInput = GetUserInput(firstTime).lower()
+    userCommand = userInput.split(" ", 1)[0]
+    SqlChoices(userInput)
+    UserInput()
 
 
 #Gets user input.
 def GetUserInput(firstTime):
     if firstTime:
         print("To exit type \"quit;\". Query must end with a semicolon.")
-    userInput = input("Hugo'sDatabase> ")
+    userInput = input("Hugo's Database> ")
     while userInput[-1] != ';':
-        userInput += input("           ...> ")
+        userInput += input("            ...> ")
     return userInput
 
 #Function to read file commands. WIP
 def ReadFile():
-    print("Now taking file name")
+    print("Please type the path of your choice of file.")
+    userInput = input("Hugo's Database> ")
+    while os.path.exists(userInput) != True:
+        userInput = input("This file is unusable. Please try again.\n            ...> ")
+    file = open(userInput, 'r')
+    fileCommand = file.readline().replace("\n", "")
+    while fileCommand.lower() != ".exit\n":
+        if re.search("^--", fileCommand.lower()) == None and fileCommand.lower() != "\n":
+            SqlChoices(fileCommand.lower())
+        fileCommand = file.readline()
+
+
 
 
 main()

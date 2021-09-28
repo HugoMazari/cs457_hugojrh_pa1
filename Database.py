@@ -5,7 +5,7 @@ class Database:
     def __init__(self, args, isFile):
         self.extension = ".hdb"
         self.tables = []
-        self.tablesNames = []
+        self.tableNames = []
         tables = []
 
         if isFile:
@@ -30,5 +30,8 @@ class Database:
             self.tablesNames.append(table.name)
         
     def CreateTable(self, userArgs):
-        self.tables.append(Table([userArgs, self.location], False))
-        self.tablesNames.append(self.tables[-1].name)
+        if userArgs.split()[1].replace(";","") in self.tableNames:
+                print("!Failed to create database {dbName} because it already exists.".format(dbName = userArgs.split()[1].replace(";","")))
+        else:
+            self.tables.append(Table([userArgs, self.location], False))
+            self.tableNames.append(self.tables[-1].name)

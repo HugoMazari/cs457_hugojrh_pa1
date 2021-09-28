@@ -12,9 +12,9 @@ class Table:
         self.items = []
 
         if(isFile == True):
-            print("From the file reader.")
             self.name = args.split("//")[-1].replace(self.extension,"")
             self.location = args.replace(self.Name + self.extension, "")
+
             #arg = //DatabaseInventory//Database//Table.htb
 
         #User creates table.
@@ -23,12 +23,17 @@ class Table:
             attrAndType =  args[0].split(" (", 1)[1]
             attrAndType = re.sub("\);$", "", attrAndType)
             for pair in attrAndType.split(", "):
-                self.types.append(pair.split()[1])
+                self.IdentifyTypes(pair.split()[1])
                 self.attributes.append(pair.split()[0])
             self.location = args[1] + "//" + self.name + self.extension
             os.mkdir(self.location)
-            #args = NAME (ATTR TYPE, ATTR TYPE), LOCATION        
+            #args = NAME (ATTR TYPE, ATTR TYPE), LOCATION
 
+    def IdentifyTypes(self, type):
+        if re.search("^((var|)char\((\d\d)\)|text)", type.lower()):
+            self.types.append(type.lower())
+        else:
+            print("!{typeName} is not a valid type.".format(typeName = type))
 
 
     #Create
