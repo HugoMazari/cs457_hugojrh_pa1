@@ -28,7 +28,7 @@ class Table:
             os.mkdir(self.location)
             attrAndTypeString = ""
             attrAndType =  args[0].split(" (", 1)[1]
-            attrAndType = re.sub("\);$", "", attrAndType)
+            attrAndType = re.sub("\);(\n|)$", "", attrAndType)
             for pair in attrAndType.split(", "):
                 self.IdentifyTypes(pair.split()[1])
                 self.attributes.append(pair.split()[0])
@@ -42,7 +42,7 @@ class Table:
     def IdentifyTypes(self, type):
         if re.search("^((var|)char\((\d\d)\)|text)", type.lower()):
             self.types.append(type.lower())
-        elif re.search("^(big|small|)int", type.lower()):
+        elif re.search("^((big|small|)int|float)", type.lower()):
             self.types.append(type.lower())
         elif re.search("(money|datetime)", type.lower()):
             self.types.append(type.lower())

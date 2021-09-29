@@ -95,10 +95,25 @@ def Use(userArgs):
     else:
         print("Cannot use {dbName} because it does not exist.".format(dbName = userArgs.split()[0].replace(";","")))
 
+#Selects attributes from table to display
+def Select(userArgs):
+    if CurrentDatabase != None:
+        Databases[CurrentDatabase].SelectTable(userArgs.replace(";",""))
+    else:
+        print("!No database selected.")
+
+#Alters table attributes
+def Alter(userArgs):
+    if CurrentDatabase != None:
+        Databases[CurrentDatabase].AlterTable(userArgs.replace(";",""))
+    else:
+        print("!No database selected.")    
+
+#Determines user's choice.
 def SqlChoices(commandAndArgs):
     userCommand = commandAndArgs.split(" ", 1)[0]
     if userCommand == "quit;":
-        print("\nGoodbye!\n")
+        print("All done.")
         sys.exit()
     else:
         userArgs = commandAndArgs.split(" ", 1)[1]
@@ -108,6 +123,10 @@ def SqlChoices(commandAndArgs):
             Drop(userArgs)
         elif userCommand == "use":
             Use(userArgs)
+        elif userCommand == "select": 
+            Select(userArgs)
+        elif userCommand == "alter":
+            Alter(userArgs)
 
 
 #Function to take in user input. WIP
@@ -142,6 +161,7 @@ def ReadFile():
         if re.search("^--", fileCommand.lower()) == None and fileCommand.lower() != "\n":
             SqlChoices(fileCommand.lower())
         fileCommand = file.readline()
+    print("All done.")
 
 
 
