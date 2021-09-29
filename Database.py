@@ -1,3 +1,6 @@
+# Name: Database.py
+# Description: Database class implementation
+#Author: Hugo
 from Table import Table
 import os
 import shutil
@@ -101,7 +104,3 @@ class Database:
         returnString = file.read()
         file.close()
         return returnString
-
-                
-
-        #userArgs = CHOICE, CHOICE from TABLE, TABLE

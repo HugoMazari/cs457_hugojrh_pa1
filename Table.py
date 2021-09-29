@@ -1,8 +1,11 @@
+# Name: Table.py
+# Description: Table class implementation
+#Author: Hugo
 import os
 import re
-import Types
 
 class Table:
+    #Constructor
     def __init__(self, args, isFile):
         self.extension = ".htb"
         self.itemExtension = ".hit"
@@ -11,6 +14,7 @@ class Table:
         self.attributes = []
         self.items = []
 
+        #Table read in from Database Storage
         if(isFile == True):
             self.name = args[0].replace(self.extension,"")
             self.location = args[1] + "//" + args[0]
@@ -39,6 +43,7 @@ class Table:
             templateFile.close()
             #args = NAME (ATTR TYPE, ATTR TYPE), LOCATION
 
+    #Identify if type used is a recognized type.
     def IdentifyTypes(self, type):
         if re.search("^((var|)char\((\d\d)\)|text)", type.lower()):
             self.types.append(type.lower())

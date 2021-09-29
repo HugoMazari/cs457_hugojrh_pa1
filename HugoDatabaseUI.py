@@ -1,3 +1,7 @@
+# Name: HugoDatabaseUI.py
+# Description: Main program for Hugo's Database
+#Author: Hugo 
+
 from Database import Database
 import os
 import shutil

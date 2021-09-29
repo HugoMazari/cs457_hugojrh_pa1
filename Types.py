@@ -1,3 +1,6 @@
+# Name: Types.py
+# Description: Types enum for future manipulation
+#Author: Hugo
 from enum import Enum
 class Type(Enum):
     CHAR = "Char(20)"
