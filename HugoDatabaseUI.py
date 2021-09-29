@@ -116,17 +116,22 @@ def SqlChoices(commandAndArgs):
         print("All done.")
         sys.exit()
     else:
-        userArgs = commandAndArgs.split(" ", 1)[1]
-        if userCommand == "create":
-            Create(userArgs)
-        elif userCommand == "drop":
-            Drop(userArgs)
-        elif userCommand == "use":
-            Use(userArgs)
-        elif userCommand == "select": 
-            Select(userArgs)
-        elif userCommand == "alter":
-            Alter(userArgs)
+        if len(commandAndArgs.split(" ", 1)) == 2:
+            userArgs = commandAndArgs.split(" ", 1)[1]
+            if userCommand == "create":
+                Create(userArgs)
+            elif userCommand == "drop":
+                Drop(userArgs)
+            elif userCommand == "use":
+                Use(userArgs)
+            elif userCommand == "select": 
+                Select(userArgs)
+            elif userCommand == "alter":
+                Alter(userArgs)
+            else:
+                print("!Unkown command.")
+        else:
+            print("!Invalid syntax. All commands must have at least one argument.")
 
 
 #Function to take in user input. WIP
