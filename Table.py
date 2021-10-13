@@ -27,7 +27,7 @@ class Table:
 
         #User creates table.
         else:
-            self.name = args[0].split()[1]
+            self.name = args[0].split()[1].lower()
             self.location = args[1] + "//" + self.name + self.extension
             os.mkdir(self.location)
             attrAndTypeString = ""

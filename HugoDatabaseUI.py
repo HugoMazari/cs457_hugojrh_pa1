@@ -111,7 +111,14 @@ def Alter(userArgs):
     if CurrentDatabase != None:
         Databases[CurrentDatabase].AlterTable(userArgs.replace(";",""))
     else:
-        print("!No database selected.")    
+        print("!No database selected.")
+
+def Insert(userArgs):
+    if CurrentDatabase != None:
+        Databases[CurrentDatabase].InsertValues(userArgs.replace(";",""))
+    else:
+        print("!No database selected.")
+
 
 #Determines user's choice.
 def SqlChoices(commandAndArgs):
@@ -133,7 +140,7 @@ def SqlChoices(commandAndArgs):
             elif userCommand == "alter":
                 Alter(userArgs)
             else:
-                print("!Unkown command.")
+                print("!Unknown command.")
         else:
             print("!Invalid syntax. All commands must have at least one argument.")
 

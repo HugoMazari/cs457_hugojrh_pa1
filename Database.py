@@ -98,6 +98,18 @@ class Database:
         else:
             print("!Syntax Error. There are too few arguments.")
 
+    def InsertValues(self, userArgs):
+        if userArgs.split()[0] == "into":
+            if userArgs.split()[1].lower() in self.tableNames:
+                if userArgs.split()[2] == "values":
+                    print("Good.")
+                else:
+                 print("!Syntax Error. The command is INSERT INTO tableName VALUES (values)")   
+            else:
+                print("!That table does not exist in this database.")
+        else:
+            print("!Syntax Error. The command is INSERT INTO tableName VALUES (values)")
+
     #Reads table info from a file.
     def displayTable(self, table):
         file = open(table.location  + "//" + table.templateName, "r")
