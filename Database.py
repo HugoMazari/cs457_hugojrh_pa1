@@ -61,18 +61,23 @@ class Database:
     #Selects data from tables in database based on user input.
     def SelectTable(self, userArgs):
         if len(userArgs.split(" from ")) != 0:
-            columnAndTable = userArgs.split(" from ")
-            selectedTables = columnAndTable[1].split(", ")
+            ColumnsTableAndFilters = userArgs.split(" from ")
+            tableAndFilters = ColumnsTableAndFilters[1].split(" where ", 1)
+            selectedTables = tableAndFilters[0].split(", ")
             displayString = ""
             for table in selectedTables:
                 if table.replace('\n', "") in self.tableNames:
                     tableIndex = self.tableNames.index(table.replace('\n', ""))
-                    displayString += self.displayTable(self.tables[tableIndex])
+                    if ColumnsTableAndFilters[0] == "*":
+                        displayString += self.displayEntireTable(self.tables[tableIndex])
+                    else:
+                        columns = ColumnsTableAndFilters[0].split(", ")
+                        displayString += self.displayPartialTable(self.tables[tableIndex], columns)
+
                 else:
-                    columnAndTable[0] = "*"
                     displayString = "!Failed to query table {missing} because it does not exist.".format(missing = table).replace("\n","")
-            if columnAndTable[0] == "*":
-                print(displayString)
+            print(displayString)
+
 
     #Alters table based on user input.
     def AlterTable(self, userArgs):
@@ -111,8 +116,34 @@ class Database:
             print("!Syntax Error. The command is INSERT INTO tableName VALUES (values)")
 
     #Reads table info from a file.
-    def displayTable(self, table):
+    def displayEntireTable(self, table):
         file = open(table.location  + "//" + table.templateName, "r")
         returnString = file.read()
         file.close()
         return returnString
+    
+    def displayPartialTable(self, table, columns):
+        returnString = ""
+        attributeIndexes = []
+        #Gets index of each attribute desired.
+        for currAttribute in table.attributes:
+            if currAttribute in columns:
+                attributeIndexes.append(table.attributes.index(currAttribute))
+        
+        #Gets attribute name and type of table.
+        for attributeIndex in attributeIndexes:
+            if attributeIndex == attributeIndexes[-1]:
+                returnString += "{attrName} {attrType}\n".format(attrName = table.attributes[attributeIndex], attrType = table.types[attributeIndex])
+            else:
+                returnString += "{attrName} {attrType} | ".format(attrName = table.attributes[attributeIndex], attrType = table.types[attributeIndex])
+
+        #Gets attributes of each item.
+        for tableItem in table.items:
+            for attributeIndex in attributeIndexes:
+                if attributeIndex == attributeIndexes[-1]:
+                    returnString += "{displayItem}\n".format(displayItem = tableItem[attributeIndex])
+                else:
+                    returnString += "{displayItem} | ".format(displayItem = tableItem[attributeIndex])
+
+                
+
