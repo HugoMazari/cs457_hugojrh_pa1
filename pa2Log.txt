@@ -1,3 +1,4 @@
 10/12: Reached out to TA to verify if case sensitivity should be a concern.
        Expecting response by tomorrow. Continue in the meantime as if it is not a requirement.
        Implement function to customize case sensitivity if response is positive.
+10/16: The answer was yes. Fml

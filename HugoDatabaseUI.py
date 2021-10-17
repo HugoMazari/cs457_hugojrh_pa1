@@ -3,6 +3,7 @@
 #Author: Hugo 
 
 from Database import Database
+import Types
 import os
 import shutil
 import sys
@@ -175,10 +176,20 @@ def ReadFile():
     #While file is not wanting to exit
     while fileCommand.lower() != ".exit\n":
         if re.search("^--", fileCommand.lower()) == None and fileCommand.lower() != "\n":
-            SqlChoices(fileCommand.lower())
+            SqlChoices(KeywordDetection(fileCommand))
         fileCommand = file.readline()
     print("All done.")
 
+def KeywordDetection(userInput):
+    returnValue = ""
+    for word in userInput.split():
+        if word.lower() in Types.Keywords.Keyword:
+            returnValue += word.lower()
+        else:
+            returnValue += word
+        if word != userInput.split()[-1]:
+            returnValue += " "
+    return returnValue
 
 
 
