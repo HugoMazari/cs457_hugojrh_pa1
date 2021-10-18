@@ -69,10 +69,10 @@ class Database:
                 if table.replace('\n', "") in self.tableNames:
                     tableIndex = self.tableNames.index(table.replace('\n', ""))
                     if ColumnsTableAndFilters[0] == "*":
-                        displayString += self.displayEntireTable(self.tables[tableIndex])
+                        displayString += self.displayTable(self.tables[tableIndex], self.tables[tableIndex].attributes)
                     else:
                         columns = ColumnsTableAndFilters[0].split(", ")
-                        displayString += self.displayPartialTable(self.tables[tableIndex], columns)
+                        displayString += self.displayTable(self.tables[tableIndex], columns)
 
                 else:
                     displayString = "!Failed to query table {missing} because it does not exist.".format(missing = table).replace("\n","")
@@ -103,26 +103,23 @@ class Database:
         else:
             print("!Syntax Error. There are too few arguments.")
 
+    #inserts user values into table
     def InsertValues(self, userArgs):
         if userArgs.split()[0] == "into":
-            if userArgs.split()[1].lower() in self.tableNames:
-                if userArgs.split()[2] == "values":
-                    print("Good.")
+            if userArgs.split()[1] in self.tableNames:
+                tableIndex = self.tableNames.index(userArgs.split()[1])
+                if userArgs.split()[2].split("(")[0] == "values":
+                    combinedValues = userArgs.split("values")[1].replace(")","").replace("(","")
+                    splitValues = combinedValues.split(", ")
+                    self.tables[tableIndex].InsertValues(splitValues)
                 else:
                  print("!Syntax Error. The command is INSERT INTO tableName VALUES (values)")   
             else:
                 print("!That table does not exist in this database.")
         else:
             print("!Syntax Error. The command is INSERT INTO tableName VALUES (values)")
-
-    #Reads table info from a file.
-    def displayEntireTable(self, table):
-        file = open(table.location  + "//" + table.templateName, "r")
-        returnString = file.read()
-        file.close()
-        return returnString
     
-    def displayPartialTable(self, table, columns):
+    def displayTable(self, table, columns):
         returnString = ""
         attributeIndexes = []
         #Gets index of each attribute desired.
@@ -133,9 +130,9 @@ class Database:
         #Gets attribute name and type of table.
         for attributeIndex in attributeIndexes:
             if attributeIndex == attributeIndexes[-1]:
-                returnString += "{attrName} {attrType}\n".format(attrName = table.attributes[attributeIndex], attrType = table.types[attributeIndex])
+                returnString += "{attrName} {attrType}\n".format(attrName = table.attributes[attributeIndex], attrType = str(table.types[attributeIndex]))
             else:
-                returnString += "{attrName} {attrType} | ".format(attrName = table.attributes[attributeIndex], attrType = table.types[attributeIndex])
+                returnString += "{attrName} {attrType} | ".format(attrName = table.attributes[attributeIndex], attrType = str(table.types[attributeIndex]))
 
         #Gets attributes of each item.
         for tableItem in table.items:
@@ -144,6 +141,6 @@ class Database:
                     returnString += "{displayItem}\n".format(displayItem = tableItem[attributeIndex])
                 else:
                     returnString += "{displayItem} | ".format(displayItem = tableItem[attributeIndex])
-
+        return returnString
                 
 

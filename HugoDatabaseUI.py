@@ -140,6 +140,8 @@ def SqlChoices(commandAndArgs):
                 Select(userArgs)
             elif userCommand == "alter":
                 Alter(userArgs)
+            elif userCommand == "insert":
+                Insert(userArgs)
             else:
                 print("!Unknown command.")
         else:
@@ -148,9 +150,8 @@ def SqlChoices(commandAndArgs):
 
 #Function to take in user input. WIP
 def UserInput(firstTime = False):
-    userInput = GetUserInput(firstTime).lower()
-    userCommand = userInput.split(" ", 1)[0]
-    SqlChoices(userInput)
+    userInput = GetUserInput(firstTime)
+    SqlChoices(KeywordDetection(userInput))
     UserInput()
 
 

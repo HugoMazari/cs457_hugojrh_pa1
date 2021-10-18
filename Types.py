@@ -3,13 +3,13 @@
 #Author: Hugo
 from enum import Enum
 class Type(Enum):
-    CHAR = "Char(20)"
-    VARCHAR = "Char(50)"
+    CHAR = "Char({amount})"
+    VARCHAR = "Char({amount})"
     TEXT = "Text"
-    INT = 5
-    BIGINT = 10
-    SMALLINT = 15
-    FLOAT = 20
+    INT = "^[\d]*$"
+    BIGINT = "^[\d]*$"
+    SMALLINT = "^[\d]*$"
+    FLOAT = "^[\d]*\.[\d]*$"
     MONEY = 1
     DATETIME = 2
 

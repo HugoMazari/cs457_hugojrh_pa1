@@ -31,7 +31,7 @@ where price > 150;
 select * from Product;
 
 select name, price 
-from product 
+from Product 
 where pid != 2;
 
 .exit

@@ -9,7 +9,7 @@ class Table:
     def __init__(self, args, isFile):
         self.extension = ".htb"
         self.itemExtension = ".hit"
-        self.templateName = "template" + self.extension
+        self.templateName = "template" + self.itemExtension
         self.types = []
         self.attributes = []
         self.items = []
@@ -23,6 +23,11 @@ class Table:
             for pair in attrAndType.split(" | "):
                 self.IdentifyTypes(pair.split()[1])
                 self.attributes.append(pair.split()[0])
+            for file in os.listdir(self.location):
+                if file.find(self.itemExtension) and file != self.templateName:
+                    itemFile = open(self.location +"//" + file, "r")
+                    fileContent = itemFile.readline()
+                    self.items.append(fileContent.split(" | "))
             #arg = //DatabaseInventory//Database//Table.htb
 
         #User creates table.
@@ -53,6 +58,58 @@ class Table:
             self.types.append(type.lower())
         else:
             print("!{typeName} is not a valid type.".format(typeName = type))
+
+    def InsertValues(self, values):
+        newItem = []
+        eraseAttempt = True
+        for type in self.types:
+            attrIndex = self.types.index(type)
+            if re.search("^((var|)char\((\d\d)\)|text)", type.lower()):
+                if values[attrIndex][0] == "\"" and values[attrIndex][-1] == "\"":
+                    if len(values) <= (int(type.split("(")[1].replace(")", ""))) + 2:
+                        newItem.append(values[attrIndex])
+                        if type == self.types[-1]:
+                            eraseAttempt = False
+                    else:
+                        print("!{attemptedValue} is greater than type {attemptedType}."\
+                            .format(attemptedValue = values[attrIndex], attemptedType = type))
+                        break
+                else:
+                    print("!{attemptedType} must start and end with quotation marks.".format(attemptedType = type))
+                    break
+            elif re.search("^(big|small|)int", type.lower()):
+                if re.match("^[\d]*$", values[attrIndex]):
+                    newItem.append(values[attrIndex])
+                    if type == self.types[-1]:
+                        eraseAttempt = False
+                else:
+                    print("{attemptedType} must be an integer.".format(attemptedType = type))
+                    break
+            elif type.lower() == "float":
+                if re.match("^[\d]*.[\d]*$", values[attrIndex]):
+                    newItem.append(values[attrIndex])
+                    if type == self.types[-1]:
+                        eraseAttempt = False
+                else:
+                    print("{attemptedType} must have a decimal point.".format(attemptedType = type))
+                    break
+            else:
+                newItem.append(values[attrIndex])
+                if type == self.types[-1]:
+                    eraseAttempt = False
+
+        if eraseAttempt == False:
+            self.items.append(newItem)
+            newItemString = ""
+            for item in newItem:
+                if item == newItem[-1]:
+                    newItemString += "{item}\n".format(item = item)
+                else:
+                    newItemString += "{item} | ".format(item = item)
+            templateFile = open(self.location + "//" + "values{valIndex}".format(valIndex = newItem.index(item)) + self.itemExtension, "x")
+            templateFile.write(newItemString)
+            templateFile.close()
+
 
 
     #Select
