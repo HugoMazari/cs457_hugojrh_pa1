@@ -129,7 +129,7 @@ def SqlChoices(commandAndArgs):
         sys.exit()
     else:
         if len(commandAndArgs.split(" ", 1)) == 2:
-            userArgs = commandAndArgs.split(" ", 1)[1]
+            userArgs = commandAndArgs.split(" ", 1)[1].replace(";","")
             if userCommand == "create":
                 Create(userArgs)
             elif userCommand == "drop":

@@ -32,7 +32,7 @@ class Table:
 
         #User creates table.
         else:
-            self.name = args[0].split()[1].lower()
+            self.name = args[0].split()[1]
             self.location = args[1] + "//" + self.name + self.extension
             os.mkdir(self.location)
             attrAndTypeString = ""
@@ -65,9 +65,9 @@ class Table:
         for type in self.types:
             attrIndex = self.types.index(type)
             if re.search("^((var|)char\((\d\d)\)|text)", type.lower()):
-                if values[attrIndex][0] == "\"" and values[attrIndex][-1] == "\"":
+                if values[attrIndex][0] == "\'" and values[attrIndex][-1] == "\'":
                     if len(values) <= (int(type.split("(")[1].replace(")", ""))) + 2:
-                        newItem.append(values[attrIndex])
+                        newItem.append(values[attrIndex].replace("\'",""))
                         if type == self.types[-1]:
                             eraseAttempt = False
                     else:
