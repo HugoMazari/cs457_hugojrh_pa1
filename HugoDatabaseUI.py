@@ -173,12 +173,16 @@ def ReadFile():
         userInput = input("This file is unusable. Please try again.\n            ...> ")
     #Opens file and reads first line
     file = open(userInput, 'r')
-    fileCommand = file.readline().replace("\n", "")
+    fileCommand = ""
+    while fileCommand[-1] != ";":
+        fileCommand += " " + file.readline().replace("\n", "")
     #While file is not wanting to exit
     while fileCommand.lower() != ".exit\n":
         if re.search("^--", fileCommand.lower()) == None and fileCommand.lower() != "\n":
             SqlChoices(KeywordDetection(fileCommand))
-        fileCommand = file.readline()
+        fileCommand = ""
+    while fileCommand[-1] != ";":
+        fileCommand += " " + file.readline().replace("\n", "")
     print("All done.")
 
 def KeywordDetection(userInput):

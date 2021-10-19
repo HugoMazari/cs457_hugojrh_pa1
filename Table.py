@@ -100,15 +100,29 @@ class Table:
 
         if eraseAttempt == False:
             self.items.append(newItem)
-            newItemString = ""
-            for item in newItem:
-                if item == newItem[-1]:
+            self.WriteOrCreateValueFile(newItem, "x")
+    
+    def WriteOrCreateValueFile(self, values, isCreate):
+        newItemString = ""
+        for item in values:
+            if item == values[-1]:
                     newItemString += "{item}\n".format(item = item)
-                else:
-                    newItemString += "{item} | ".format(item = item)
-            templateFile = open(self.location + "//" + "values{valIndex}".format(valIndex = newItem.index(item)) + self.itemExtension, "x")
-            templateFile.write(newItemString)
-            templateFile.close()
+            else:
+                newItemString += "{item} | ".format(item = item)
+        templateFile = open(self.location + "//" + "values{valIndex}".format(valIndex = self.items.index(values)) + self.itemExtension, isCreate)
+        templateFile.write(newItemString)
+        templateFile.close()
+
+    def Where(self, userArgs):
+        if userArgs[0] in self.attributes:
+            attrIndex = self.attributes.index(userArgs[0])
+            if userArgs[1].find("=") != -1:
+                comparativeValue = userArgs[2]
+                    
+
+
+                
+
 
 
 
