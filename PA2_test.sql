@@ -22,11 +22,11 @@ select * from Product;
 --
 select * from Product;
 --
---delete from Product 
---where name = 'Gizmo';
---
---delete from Product 
---where price > 150;
+delete from Product 
+where name = 'Gizmo';
+
+delete from Product 
+where price > 150;
 --
 select * from Product;
 --

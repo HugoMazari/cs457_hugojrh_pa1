@@ -114,12 +114,25 @@ def Alter(userArgs):
     else:
         print("!No database selected.")
 
+#Insert values into table
 def Insert(userArgs):
     if CurrentDatabase != None:
         Databases[CurrentDatabase].InsertValues(userArgs.replace(";",""))
     else:
         print("!No database selected.")
 
+#Deletes value from table
+def Delete(userArgs):
+    if CurrentDatabase != None:
+        Databases[CurrentDatabase].DeleteValues(userArgs.replace(";",""))
+    else:
+        print("!No database selected.")
+
+def Update(userArgs):
+    if CurrentDatabase != None:
+        Databases[CurrentDatabase].UpdateValues(userArgs.replace(";",""))
+    else:
+        print("!No database selected.")
 
 #Determines user's choice.
 def SqlChoices(commandAndArgs):
@@ -142,18 +155,20 @@ def SqlChoices(commandAndArgs):
                 Alter(userArgs)
             elif userCommand == "insert":
                 Insert(userArgs)
+            elif userCommand == "delete":
+                Delete(userArgs)
+            elif userCommand == "update":
+                Update(userArgs)
             else:
                 print("!Unknown command.")
         else:
             print("!Invalid syntax. All commands must have at least one argument.")
-
 
 #Function to take in user input. WIP
 def UserInput(firstTime = False):
     userInput = GetUserInput(firstTime)
     SqlChoices(KeywordDetection(userInput))
     UserInput()
-
 
 #Gets user input.
 def GetUserInput(firstTime):
@@ -185,6 +200,7 @@ def ReadFile():
             fileCommand += " " + file.readline().replace("\n", "")
     print("All done.")
 
+#Detects if words are keywords or names
 def KeywordDetection(userInput):
     returnValue = ""
     for word in userInput.split():

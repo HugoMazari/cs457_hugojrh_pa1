@@ -78,7 +78,6 @@ class Database:
                     displayString = "!Failed to query table {missing} because it does not exist.".format(missing = table).replace("\n","")
             print(displayString)
 
-
     #Alters table based on user input.
     def AlterTable(self, userArgs):
         if len(userArgs.split()) >= 4:
@@ -112,6 +111,7 @@ class Database:
                     combinedValues = userArgs.split("values")[1].replace(")","").replace("(","")
                     splitValues = combinedValues.split(", ")
                     self.tables[tableIndex].InsertValues(splitValues)
+                    print("1 new record inserted.")
                 else:
                  print("!Syntax Error. The command is INSERT INTO tableName VALUES (values)")   
             else:
@@ -119,6 +119,30 @@ class Database:
         else:
             print("!Syntax Error. The command is INSERT INTO tableName VALUES (values)")
     
+    #Deletes values from table
+    def DeleteValues(self, userArgs):
+        tableAndCond = userArgs.replace("from ","").split(" where ")
+        if len(tableAndCond) == 2:
+            if tableAndCond[0] in self.tableNames:
+                tableIndex = self.tableNames.index(tableAndCond[0])
+                selectedTable = self.tables[tableIndex]
+                fufilledValues = self.tables[tableIndex].Where(tableAndCond[1].split())
+                valueFileName = []
+                for fufilledValue in fufilledValues:
+                    fileName = ""
+                    for values in fufilledValue:
+                        fileName += values
+                    selectedTable.items.remove(fufilledValue)
+                    os.remove(selectedTable.location + "//" + fileName + selectedTable.itemExtension)
+                print("{amountRemoved} records deleted.".format(amountRemoved = len(fufilledValues)))
+
+    def UpdateValues(self, userArgs):
+        print("Update")
+
+        
+
+
+    #display table
     def displayTable(self, table, columns, hasWhere):
         returnString = ""
         attributeIndexes = []

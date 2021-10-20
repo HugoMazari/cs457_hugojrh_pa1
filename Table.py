@@ -60,6 +60,7 @@ class Table:
         else:
             print("!{typeName} is not a valid type.".format(typeName = type))
 
+    #Insert values to table.
     def InsertValues(self, values):
         newItem = []
         eraseAttempt = True
@@ -103,61 +104,56 @@ class Table:
             self.items.append(newItem)
             self.WriteOrCreateValueFile(newItem, "x")
     
+    #Writes or creates values to a file.
     def WriteOrCreateValueFile(self, values, isCreate):
         newItemString = ""
+        fileName = ""
         for item in values:
             if item == values[-1]:
                     newItemString += "{item}\n".format(item = item)
             else:
                 newItemString += "{item} | ".format(item = item)
-        templateFile = open(self.location + "//" + "values{valIndex}".format(valIndex = self.items.index(values)) + self.itemExtension, isCreate)
+            fileName += item
+        templateFile = open(self.location + "//" + fileName + self.itemExtension, isCreate)
         templateFile.write(newItemString)
         templateFile.close()
 
+    #Determine which values to display.
     def Where(self, userArgs):
         filteredItems = []
         if userArgs[0] in self.attributes:
             attrIndex = self.attributes.index(userArgs[0])
-            comparativeValue = userArgs[2]
+            comparativeValue = userArgs[2].replace("\'","")
             for item in self.items:
                 if userArgs[1] == "=":
-                    if str(item[attrIndex]) == str(comparativeValue):
+                    if item[attrIndex] == comparativeValue:
                         filteredItems.append(item)
                 elif userArgs[1] == "!=":
-                    if str(item[attrIndex]) != str(comparativeValue):
+                    if str(item[attrIndex]) != comparativeValue:
                         filteredItems.append(item)
                 elif userArgs[1] == "<":
-                    if item[attrIndex] == float or item[attrIndex] == int:
-                        if comparativeValue == float or comparativeValue == int:
-                            if item[attrIndex] < float(comparativeValue):
+                    if re.match("^[\d]*.[\d]*$", item[attrIndex]):
+                        if re.match("^[\d]*.[\d]*$", comparativeValue):
+                            if float(item[attrIndex]) < float(comparativeValue):
                                 filteredItems.append(item)
                 elif userArgs[1] == ">":
-                    if item[attrIndex] == float or item[attrIndex] == int:
-                        if comparativeValue == float or comparativeValue == int:
-                            if item[attrIndex] < float(comparativeValue):
+                    if re.match("^[\d]*.[\d]*$", item[attrIndex]):
+                        if re.match("^[\d]*.[\d]*$", comparativeValue):
+                            if float(item[attrIndex]) > float(comparativeValue):
                                 filteredItems.append(item)
                 elif userArgs[1] == "<=":
-                    if item[attrIndex] == float or item[attrIndex] == int:
-                        if comparativeValue == float or comparativeValue == int:
-                            if item[attrIndex] < float(comparativeValue):
+                    if re.match("^[\d]*.[\d]*$", item[attrIndex]):
+                        if re.match("^[\d]*.[\d]*$", comparativeValue):
+                            if float(item[attrIndex]) < float(comparativeValue):
                                 filteredItems.append(item)
                 elif userArgs[1] == ">=":
-                    if item[attrIndex] == float or item[attrIndex] == int:
-                        if comparativeValue == float or comparativeValue == int:
-                            if item[attrIndex] < float(comparativeValue):
+                    if re.match("^[\d]*.[\d]*$", item[attrIndex]):
+                        if re.match("^[\d]*.[\d]*$", comparativeValue):
+                            if float(item[attrIndex]) < float(comparativeValue):
                                 filteredItems.append(item)
                 else:
                     print("!{compareType} is an invalid comparison.".format(compareType = userArgs[1]))
         return filteredItems
-
-                
-                    
-
-
-                
-
-
-
 
     #Select
     #Alter
