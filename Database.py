@@ -127,7 +127,6 @@ class Database:
                 tableIndex = self.tableNames.index(tableAndCond[0])
                 selectedTable = self.tables[tableIndex]
                 fufilledValues = self.tables[tableIndex].Where(tableAndCond[1].split())
-                valueFileName = []
                 for fufilledValue in fufilledValues:
                     fileName = ""
                     for values in fufilledValue:
@@ -137,7 +136,26 @@ class Database:
                 print("{amountRemoved} records deleted.".format(amountRemoved = len(fufilledValues)))
 
     def UpdateValues(self, userArgs):
-        print("Update")
+        if userArgs.find("set") != -1 and userArgs.find("where") != -1:
+            tableName = userArgs.split()[0]
+            if tableName in self.tableNames:
+                tableIndex = self.tableNames.index(tableName)
+                selectedTable = self.tables[tableIndex] 
+                selectedValues = selectedTable.Where(userArgs.split(" where ")[1])
+                targetedAttrAndNewValue = userArgs.replace("set","where").split(" where ")[1].split()
+                targetedAttr = targetedAttrAndNewValue[0]
+                targetedAttrIndex = selectedTable.attributes.index(targetedAttr)
+                newValue = targetedAttrAndNewValue[2]
+                for value in selectedValues:
+                    oldFileName = ""
+                    newFileName = ""
+                    for values in value:
+                        oldFileName += values
+                    
+                    
+
+                    
+            print("Space")
 
         
 

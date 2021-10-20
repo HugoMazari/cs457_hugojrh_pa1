@@ -12,13 +12,13 @@ insert into Product values(5,	'SuperGizmo', 	49.99);
 
 select * from Product;
 
---update Product 
---set name = 'Gizmo' 
---where name = 'SuperGizmo';
---
---update Product 
---set price = 14.99 
---where name = 'Gizmo';
+update Product 
+set name = 'Gizmo' 
+where name = 'SuperGizmo';
+
+update Product 
+set price = 14.99 
+where name = 'Gizmo';
 --
 select * from Product;
 --
