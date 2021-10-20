@@ -140,17 +140,9 @@ class Database:
             tableName = userArgs.split()[0]
             if tableName in self.tableNames:
                 tableIndex = self.tableNames.index(tableName)
-                selectedTable = self.tables[tableIndex] 
-                selectedValues = selectedTable.Where(userArgs.split(" where ")[1])
                 targetedAttrAndNewValue = userArgs.replace("set","where").split(" where ")[1].split()
                 targetedAttr = targetedAttrAndNewValue[0]
-                targetedAttrIndex = selectedTable.attributes.index(targetedAttr)
-                newValue = targetedAttrAndNewValue[2]
-                for value in selectedValues:
-                    oldFileName = ""
-                    newFileName = ""
-                    for values in value:
-                        oldFileName += values
+                
                     
                     
 
