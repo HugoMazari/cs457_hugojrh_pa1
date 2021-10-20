@@ -20,7 +20,7 @@ select * from Product;
 --set price = 14.99 
 --where name = 'Gizmo';
 --
---select * from Product;
+select * from Product;
 --
 --delete from Product 
 --where name = 'Gizmo';
@@ -28,11 +28,11 @@ select * from Product;
 --delete from Product 
 --where price > 150;
 --
---select * from Product;
+select * from Product;
 --
---select name, price 
---from Product 
---where pid != 2;
+select name, price 
+from Product 
+where pid != 2;
 
 .exit
 

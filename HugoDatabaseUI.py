@@ -174,15 +174,15 @@ def ReadFile():
     #Opens file and reads first line
     file = open(userInput, 'r')
     fileCommand = ""
-    while fileCommand[-1] != ";":
+    while re.search("^[\" \"]*--|;$", fileCommand.lower()) == None:
         fileCommand += " " + file.readline().replace("\n", "")
     #While file is not wanting to exit
-    while fileCommand.lower() != ".exit\n":
-        if re.search("^--", fileCommand.lower()) == None and fileCommand.lower() != "\n":
+    while re.search("^[\" \"]*\.exit", fileCommand.lower()) == None:
+        if re.search("^[\" \"]*--", fileCommand.lower()) == None and fileCommand.lower() != "\n":
             SqlChoices(KeywordDetection(fileCommand))
         fileCommand = ""
-    while fileCommand[-1] != ";":
-        fileCommand += " " + file.readline().replace("\n", "")
+        while re.search("^[\" \"]*--|;$|^[\" \"]*\.exit", fileCommand.lower()) == None:
+            fileCommand += " " + file.readline().replace("\n", "")
     print("All done.")
 
 def KeywordDetection(userInput):
@@ -195,7 +195,6 @@ def KeywordDetection(userInput):
         if word != userInput.split()[-1]:
             returnValue += " "
     return returnValue
-
 
 
 main()

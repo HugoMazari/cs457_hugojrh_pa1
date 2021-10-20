@@ -13,6 +13,7 @@ class Table:
         self.types = []
         self.attributes = []
         self.items = []
+        self.errorVar = "ErroredOut"
 
         #Table read in from Database Storage
         if(isFile == True):
@@ -114,10 +115,42 @@ class Table:
         templateFile.close()
 
     def Where(self, userArgs):
+        filteredItems = []
         if userArgs[0] in self.attributes:
             attrIndex = self.attributes.index(userArgs[0])
-            if userArgs[1].find("=") != -1:
-                comparativeValue = userArgs[2]
+            comparativeValue = userArgs[2]
+            for item in self.items:
+                if userArgs[1] == "=":
+                    if str(item[attrIndex]) == str(comparativeValue):
+                        filteredItems.append(item)
+                elif userArgs[1] == "!=":
+                    if str(item[attrIndex]) != str(comparativeValue):
+                        filteredItems.append(item)
+                elif userArgs[1] == "<":
+                    if item[attrIndex] == float or item[attrIndex] == int:
+                        if comparativeValue == float or comparativeValue == int:
+                            if item[attrIndex] < float(comparativeValue):
+                                filteredItems.append(item)
+                elif userArgs[1] == ">":
+                    if item[attrIndex] == float or item[attrIndex] == int:
+                        if comparativeValue == float or comparativeValue == int:
+                            if item[attrIndex] < float(comparativeValue):
+                                filteredItems.append(item)
+                elif userArgs[1] == "<=":
+                    if item[attrIndex] == float or item[attrIndex] == int:
+                        if comparativeValue == float or comparativeValue == int:
+                            if item[attrIndex] < float(comparativeValue):
+                                filteredItems.append(item)
+                elif userArgs[1] == ">=":
+                    if item[attrIndex] == float or item[attrIndex] == int:
+                        if comparativeValue == float or comparativeValue == int:
+                            if item[attrIndex] < float(comparativeValue):
+                                filteredItems.append(item)
+                else:
+                    print("!{compareType} is an invalid comparison.".format(compareType = userArgs[1]))
+        return filteredItems
+
+                
                     
 
 

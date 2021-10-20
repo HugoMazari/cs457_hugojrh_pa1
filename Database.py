@@ -69,10 +69,10 @@ class Database:
                 if table.replace('\n', "") in self.tableNames:
                     tableIndex = self.tableNames.index(table.replace('\n', ""))
                     if ColumnsTableAndFilters[0] == "*":
-                        displayString += self.displayTable(self.tables[tableIndex], self.tables[tableIndex].attributes)
+                        displayString += self.displayTable(self.tables[tableIndex], self.tables[tableIndex].attributes, tableAndFilters)
                     else:
                         columns = ColumnsTableAndFilters[0].split(", ")
-                        displayString += self.displayTable(self.tables[tableIndex], columns)
+                        displayString += self.displayTable(self.tables[tableIndex], columns, tableAndFilters)
 
                 else:
                     displayString = "!Failed to query table {missing} because it does not exist.".format(missing = table).replace("\n","")
@@ -119,9 +119,14 @@ class Database:
         else:
             print("!Syntax Error. The command is INSERT INTO tableName VALUES (values)")
     
-    def displayTable(self, table, columns):
+    def displayTable(self, table, columns, hasWhere):
         returnString = ""
         attributeIndexes = []
+        displayValues = []
+        if len(hasWhere) == 1:
+            displayValues = table.items
+        else:
+            displayValues = table.Where(hasWhere[1].split())
         #Gets index of each attribute desired.
         for currAttribute in table.attributes:
             if currAttribute in columns:
@@ -135,7 +140,7 @@ class Database:
                 returnString += "{attrName} {attrType} | ".format(attrName = table.attributes[attributeIndex], attrType = str(table.types[attributeIndex]))
 
         #Gets attributes of each item.
-        for tableItem in table.items:
+        for tableItem in displayValues:
             for attributeIndex in attributeIndexes:
                 if attributeIndex == attributeIndexes[-1]:
                     returnString += "{displayItem}\n".format(displayItem = tableItem[attributeIndex])
