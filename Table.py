@@ -157,6 +157,7 @@ class Table:
                     print("!{compareType} is an invalid comparison.".format(compareType = userArgs[1]))
         return filteredItems
 
+    #modifies values in the table
     def ModifyValues(self, targets, attrTarget, newVal):
         for target in targets:
             oldFile = ""

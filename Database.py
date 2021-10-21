@@ -135,6 +135,7 @@ class Database:
                     os.remove(selectedTable.location + "//" + fileName + selectedTable.itemExtension)
                 print("{amountRemoved} records deleted.".format(amountRemoved = len(fufilledValues)))
 
+    #updates values in table base
     def UpdateValues(self, userArgs):
         if userArgs.find("set") != -1 and userArgs.find("where") != -1:
             tableName = userArgs.split()[0]
