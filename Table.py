@@ -128,6 +128,8 @@ class Table:
                 if userArgs[1] == "=":
                     if item[attrIndex] == comparativeValue:
                         filteredItems.append(item)
+                    else:
+                        set(comparativeValue).symmetric_difference(set(item[attrIndex]))
                 elif userArgs[1] == "!=":
                     if str(item[attrIndex]) != comparativeValue:
                         filteredItems.append(item)
@@ -154,6 +156,18 @@ class Table:
                 else:
                     print("!{compareType} is an invalid comparison.".format(compareType = userArgs[1]))
         return filteredItems
+
+    def ModifyValues(self, targets, attrTarget, newVal):
+        for target in targets:
+            oldFile = ""
+            for values in target:
+                oldFile += values
+            targetIndex = self.items.index(target)
+            attrIndex = self.attributes.index(attrTarget)
+            self.items[targetIndex][attrIndex] = newVal
+            self.WriteOrCreateValueFile(self.items[targetIndex],"x")
+            
+            os.remove(self.location + "//" + oldFile + self.itemExtension)
 
     #Select
     #Alter

@@ -141,24 +141,13 @@ class Database:
             if tableName in self.tableNames:
                 tableIndex = self.tableNames.index(tableName)
                 selectedTable = self.tables[tableIndex] 
-                selectedValues = selectedTable.Where(userArgs.split(" where ")[1])
+                selectedValues = selectedTable.Where(userArgs.split(" where ")[1].split())
                 targetedAttrAndNewValue = userArgs.replace("set","where").split(" where ")[1].split()
                 targetedAttr = targetedAttrAndNewValue[0]
-                targetedAttrIndex = selectedTable.attributes.index(targetedAttr)
-                newValue = targetedAttrAndNewValue[2]
-                for value in selectedValues:
-                    oldFileName = ""
-                    newFileName = ""
-                    for values in value:
-                        oldFileName += values
-                    
-                    
-
-                    
-            print("Space")
-
-        
-
+                newValue = targetedAttrAndNewValue[2].replace("\'","")
+                selectedTable.ModifyValues(selectedValues, targetedAttr, newValue)
+                print("{amount} record{s} modified.".format(amount = len(selectedValues), \
+                    s = "s" if len(selectedValues) > 1 else ""))
 
     #display table
     def displayTable(self, table, columns, hasWhere):

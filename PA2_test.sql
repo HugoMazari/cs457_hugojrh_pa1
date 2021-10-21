@@ -67,4 +67,4 @@ where pid != 2;
 -- 3|SingleTouch|149.99
 -- name varchar(20)|price float
 -- SingleTouch|149.99
--- All done.
+-- All done
