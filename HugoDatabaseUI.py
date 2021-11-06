@@ -128,6 +128,7 @@ def Delete(userArgs):
     else:
         print("!No database selected.")
 
+#updates values in table
 def Update(userArgs):
     if CurrentDatabase != None:
         Databases[CurrentDatabase].UpdateValues(userArgs.replace(";",""))

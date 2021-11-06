@@ -135,22 +135,20 @@ class Database:
                     os.remove(selectedTable.location + "//" + fileName + selectedTable.itemExtension)
                 print("{amountRemoved} records deleted.".format(amountRemoved = len(fufilledValues)))
 
+    #updates values in table base
     def UpdateValues(self, userArgs):
         if userArgs.find("set") != -1 and userArgs.find("where") != -1:
             tableName = userArgs.split()[0]
             if tableName in self.tableNames:
                 tableIndex = self.tableNames.index(tableName)
+                selectedTable = self.tables[tableIndex] 
+                selectedValues = selectedTable.Where(userArgs.split(" where ")[1].split())
                 targetedAttrAndNewValue = userArgs.replace("set","where").split(" where ")[1].split()
                 targetedAttr = targetedAttrAndNewValue[0]
-                
-                    
-                    
-
-                    
-            print("Space")
-
-        
-
+                newValue = targetedAttrAndNewValue[2].replace("\'","")
+                selectedTable.ModifyValues(selectedValues, targetedAttr, newValue)
+                print("{amount} record{s} modified.".format(amount = len(selectedValues), \
+                    s = "s" if len(selectedValues) > 1 else ""))
 
     #display table
     def displayTable(self, table, columns, hasWhere):
