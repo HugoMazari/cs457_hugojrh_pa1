@@ -18,7 +18,8 @@ class Keywords:
         "database", "table", "alter", \
             "add", "select", "from", \
                 "insert", "into", "values", \
-                    "update", "set", "where" "delete", \
+                    "update", "set", "where", "delete", \
                         "char", "varchar", "text", "int", \
                             "bigint", "smallint", "float", \
-                                "money", "datetime"]
+                                "money", "datetime", "left outer join", "inner join", \
+                                    "on"]

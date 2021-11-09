@@ -64,34 +64,39 @@ class Database:
         if len(userArgs.split(" from ")) != 0:
             #Variable declaration
             ColumnsTableAndFilters = userArgs.split(" from ") #Splits columns to display from tables and conditions
-            tableAndFilters = ColumnsTableAndFilters[1].split(" where ", 1) #Splits tables to select from conditions
-            joinType = self.DiscoverJoinType(tableAndFilters[0]) #Determines the type of join
+            joinType = self.DiscoverJoinType(ColumnsTableAndFilters[1]) #Determines the type of join
+            tableAndFilters = "" 
+            if joinType == ", ": #Splits tables to select from conditions
+                tableAndFilters = ColumnsTableAndFilters[1].split(" where ", 1) 
+            else:
+                tableAndFilters = ColumnsTableAndFilters[1].split(" on ", 1)
             selectedTables = tableAndFilters[0].split(joinType) #Splits tables based on join type
             displayString = ""
             tableIndex = []
+            columns = []
 
             #Checks if table is given a separate name
             for table in selectedTables:
                 if " " in table:
-                    
                     selectedTables[selectedTables.index(table)] = table.split()
             
             #Checks if tables queued exist
             for table in selectedTables:
                 tableName = table
-                if type(table) is List:
+                if type(table) is list:
                     tableName = table[0]
                 if tableName.replace('\n', "") in self.tableNames:
                     tableIndex.append(self.tableNames.index(tableName.replace('\n', "")))
                 else:
                     displayString = "!Failed to query table {missing} because it does not exist.\n".format(missing = table).replace("\n","")
 
-            for index in tableIndex:
-                if ColumnsTableAndFilters[0] == "*":
-                    displayString += self.displayTable(self.tables[index], self.tables[index].attributes, tableAndFilters)
-                else:
-                    columns = ColumnsTableAndFilters[0].split(", ")
-                    displayString += self.displayTable(self.tables[index], columns, tableAndFilters)
+            
+            if ColumnsTableAndFilters[0] == "*":
+                for index in tableIndex:
+                    columns.extend(self.tables[index].attributes)
+            else:
+                columns.extend(ColumnsTableAndFilters[0].split(", "))
+            displayString = self.displayTable(joinType, tableIndex, columns, tableAndFilters)
 
             print(displayString)
 
@@ -167,14 +172,18 @@ class Database:
                     s = "s" if len(selectedValues) > 1 else ""))
 
     #display table
-    def displayTable(self, table, columns, hasWhere):
-        returnString = ""
+    def displayTable(self, joinType, table, columns, hasWhere):
+        #Variables
+        returnString = "" #Strings to Return
         attributeIndexes = []
         displayValues = []
+        
+        #Checks if filters exist
         if len(hasWhere) == 1:
             displayValues = table.items
         else:
             displayValues = table.Where(hasWhere[1].split())
+
         #Gets index of each attribute desired.
         for currAttribute in table.attributes:
             if currAttribute in columns:
@@ -205,6 +214,8 @@ class Database:
             joinType = "inner join"
         elif "left outer" in tablesSelected:
             joinType = " left outer join "
-        else:
+        elif "right outer" in tablesSelected:
             joinType = " right outer join "
+        else:
+            joinType = " default "
         return joinType

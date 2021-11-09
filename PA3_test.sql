@@ -14,6 +14,8 @@ insert into Sales values(1,344);
 insert into Sales values(1,355);
 insert into Sales values(2,544);
 
+select * 
+from Employee E, Sales S ;
 -- The following will miss Gill (2 points)
 select * 
 from Employee E, Sales S 

@@ -2,3 +2,15 @@
 First, figure out how to identify var names for tables, such as Sales S.
 Second, figure out how to compare values between two tables.
 Finally figure out how a outer join and an innerjoin are different from basic select.
+
+DipslayTable(Type of join, the selected indexs, column, filters)
+Determine the filters
+Determine which type of join it is.
+If comma, 
+    If where exists, filter
+    Otherwise, don't filter
+Else if some kind of join
+    Must have join
+        if inner join, filter
+        else if outer join, don't filter first list then filter second one
+
