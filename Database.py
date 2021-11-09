@@ -1,6 +1,7 @@
 # Name: Database.py
 # Description: Database class implementation
 #Author: Hugo
+from typing import List
 from Table import Table
 import os
 import shutil
@@ -41,8 +42,8 @@ class Database:
     
     #Ensures user calling create table will not cause issues
     def CreateTable(self, userArgs):
-        if userArgs.split()[1].replace(";","") in self.tableNames:
-                print("!Failed to create database {dbName} because it already exists.".format(dbName = userArgs.split()[1].replace(";","")))
+        if userArgs.split()[1].split("(")[0] in self.tableNames:
+                print("!Failed to create database {dbName} because it already exists.".format(dbName = userArgs.split()[1].split("(")[0]))
         else:
             self.tables.append(Table([userArgs, self.location], False))
             self.tableNames.append(self.tables[-1].name)
@@ -61,21 +62,37 @@ class Database:
     #Selects data from tables in database based on user input.
     def SelectTable(self, userArgs):
         if len(userArgs.split(" from ")) != 0:
-            ColumnsTableAndFilters = userArgs.split(" from ")
-            tableAndFilters = ColumnsTableAndFilters[1].split(" where ", 1)
-            selectedTables = tableAndFilters[0].split(", ")
+            #Variable declaration
+            ColumnsTableAndFilters = userArgs.split(" from ") #Splits columns to display from tables and conditions
+            tableAndFilters = ColumnsTableAndFilters[1].split(" where ", 1) #Splits tables to select from conditions
+            joinType = self.DiscoverJoinType(tableAndFilters[0]) #Determines the type of join
+            selectedTables = tableAndFilters[0].split(joinType) #Splits tables based on join type
             displayString = ""
-            for table in selectedTables:
-                if table.replace('\n', "") in self.tableNames:
-                    tableIndex = self.tableNames.index(table.replace('\n', ""))
-                    if ColumnsTableAndFilters[0] == "*":
-                        displayString += self.displayTable(self.tables[tableIndex], self.tables[tableIndex].attributes, tableAndFilters)
-                    else:
-                        columns = ColumnsTableAndFilters[0].split(", ")
-                        displayString += self.displayTable(self.tables[tableIndex], columns, tableAndFilters)
+            tableIndex = []
 
+            #Checks if table is given a separate name
+            for table in selectedTables:
+                if " " in table:
+                    
+                    selectedTables[selectedTables.index(table)] = table.split()
+            
+            #Checks if tables queued exist
+            for table in selectedTables:
+                tableName = table
+                if type(table) is List:
+                    tableName = table[0]
+                if tableName.replace('\n', "") in self.tableNames:
+                    tableIndex.append(self.tableNames.index(tableName.replace('\n', "")))
                 else:
-                    displayString = "!Failed to query table {missing} because it does not exist.".format(missing = table).replace("\n","")
+                    displayString = "!Failed to query table {missing} because it does not exist.\n".format(missing = table).replace("\n","")
+
+            for index in tableIndex:
+                if ColumnsTableAndFilters[0] == "*":
+                    displayString += self.displayTable(self.tables[index], self.tables[index].attributes, tableAndFilters)
+                else:
+                    columns = ColumnsTableAndFilters[0].split(", ")
+                    displayString += self.displayTable(self.tables[index], columns, tableAndFilters)
+
             print(displayString)
 
     #Alters table based on user input.
@@ -135,7 +152,6 @@ class Database:
                     os.remove(selectedTable.location + "//" + fileName + selectedTable.itemExtension)
                 print("{amountRemoved} records deleted.".format(amountRemoved = len(fufilledValues)))
 
-    #updates values in table base
     def UpdateValues(self, userArgs):
         if userArgs.find("set") != -1 and userArgs.find("where") != -1:
             tableName = userArgs.split()[0]
@@ -179,5 +195,16 @@ class Database:
                 else:
                     returnString += "{displayItem} | ".format(displayItem = tableItem[attributeIndex])
         return returnString
-                
 
+    #Determines what kind of join it is.
+    def DiscoverJoinType(self, tablesSelected):
+        joinType = None
+        if ", " in tablesSelected:
+            joinType = ", "
+        elif "inner" in tablesSelected:
+            joinType = "inner join"
+        elif "left outer" in tablesSelected:
+            joinType = " left outer join "
+        else:
+            joinType = " right outer join "
+        return joinType

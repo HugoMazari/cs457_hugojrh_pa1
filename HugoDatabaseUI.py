@@ -53,7 +53,7 @@ def Create(userArgs):
             else:
                 Databases.append(Database([userArgs.split(" ", 1)[1], DatabaseStorage], False))
                 DatabaseNames.append(Databases[-1].name)
-                print("Database {dbName} created.".format(dbName = userArgs.split()[1].replace(";","")))
+                print("Database {dbName} created.".format(dbName = userArgs.split()[1].split("(")[0]))
         else:
             print("!Syntax Error. There are too many or too few arguments.")
     #Table creation
@@ -64,7 +64,7 @@ def Create(userArgs):
                     print("!Failed to create table {dbName} because it already exists.".format(dbName = userArgs.split()[1].replace(";","")))
                 else:
                     Databases[CurrentDatabase].CreateTable(userArgs)
-                    print("Table {dbName} created.".format(dbName = userArgs.split()[1].replace(";","")))
+                    print("Table {dbName} created.".format(dbName = userArgs.split()[1].split("(")[0]))
             else:
                 print("!Syntax Error. There are too few arguments.")
         else:
@@ -211,6 +211,9 @@ def KeywordDetection(userInput):
             returnValue += word
         if word != userInput.split()[-1]:
             returnValue += " "
+    returnValue = returnValue.replace(",", ", ")
+    returnValue = re.sub(",\s{2,}", ", ", returnValue)
+    returnValue = re.sub("\s{1,}\(", "(", returnValue)
     return returnValue
 
 

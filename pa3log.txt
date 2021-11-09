@@ -1,0 +1,4 @@
+11/7: Okay, plan of attack.
+First, figure out how to identify var names for tables, such as Sales S.
+Second, figure out how to compare values between two tables.
+Finally figure out how a outer join and an innerjoin are different from basic select.

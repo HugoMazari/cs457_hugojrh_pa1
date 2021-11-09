@@ -33,12 +33,12 @@ class Table:
 
         #User creates table.
         else:
-            self.name = args[0].split()[1]
+            self.name = args[0].split()[1].split("(")[0]
             self.location = args[1] + "//" + self.name + self.extension
             os.mkdir(self.location)
             attrAndTypeString = ""
-            attrAndType =  args[0].split(" (", 1)[1]
-            attrAndType = re.sub("\);(\n|)$", "", attrAndType)
+            attrAndType =  args[0].split("(", 1)[1]
+            attrAndType = re.sub("\)(\n|)$", "", attrAndType)
             for pair in attrAndType.split(", "):
                 self.IdentifyTypes(pair.split()[1])
                 self.attributes.append(pair.split()[0])
@@ -64,8 +64,8 @@ class Table:
     def InsertValues(self, values):
         newItem = []
         eraseAttempt = True
+        attrIndex = 0
         for type in self.types:
-            attrIndex = self.types.index(type)
             if re.search("^((var|)char\((\d\d)\)|text)", type.lower()):
                 if values[attrIndex][0] == "\'" and values[attrIndex][-1] == "\'":
                     if len(values) <= (int(type.split("(")[1].replace(")", ""))) + 2:
@@ -99,6 +99,7 @@ class Table:
                 newItem.append(values[attrIndex])
                 if type == self.types[-1]:
                     eraseAttempt = False
+            attrIndex += 1
 
         if eraseAttempt == False:
             self.items.append(newItem)
