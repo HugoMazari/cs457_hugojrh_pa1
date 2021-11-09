@@ -93,9 +93,9 @@ class Database:
             
             if ColumnsTableAndFilters[0] == "*":
                 for index in tableIndex:
-                    columns.extend(self.tables[index].attributes)
+                    columns.append(self.tables[index].attributes)
             else:
-                columns.extend(ColumnsTableAndFilters[0].split(", "))
+                columns.append(ColumnsTableAndFilters[0].split(", "))
             displayString = self.displayTable(joinType, tableIndex, columns, tableAndFilters)
 
             print(displayString)
@@ -172,29 +172,33 @@ class Database:
                     s = "s" if len(selectedValues) > 1 else ""))
 
     #display table
-    def displayTable(self, joinType, table, columns, hasWhere):
+    def displayTable(self, joinType, tableIndex, columns, hasWhere):
         #Variables
         returnString = "" #Strings to Return
         attributeIndexes = []
         displayValues = []
+        whereRequirements = []
         
         #Checks if filters exist
         if len(hasWhere) == 1:
-            displayValues = table.items
+            for index in tableIndex:
+                displayValues.append(self.tables[index].items)
         else:
-            displayValues = table.Where(hasWhere[1].split())
+            whereRequirements = hasWhere[1].split()
+            displayValues = tableIndex.Where()
 
+        #Continue from here
         #Gets index of each attribute desired.
-        for currAttribute in table.attributes:
+        for currAttribute in tableIndex.attributes:
             if currAttribute in columns:
-                attributeIndexes.append(table.attributes.index(currAttribute))
+                attributeIndexes.append(tableIndex.attributes.index(currAttribute))
         
         #Gets attribute name and type of table.
         for attributeIndex in attributeIndexes:
             if attributeIndex == attributeIndexes[-1]:
-                returnString += "{attrName} {attrType}\n".format(attrName = table.attributes[attributeIndex], attrType = str(table.types[attributeIndex]))
+                returnString += "{attrName} {attrType}\n".format(attrName = tableIndex.attributes[attributeIndex], attrType = str(tableIndex.types[attributeIndex]))
             else:
-                returnString += "{attrName} {attrType} | ".format(attrName = table.attributes[attributeIndex], attrType = str(table.types[attributeIndex]))
+                returnString += "{attrName} {attrType} | ".format(attrName = tableIndex.attributes[attributeIndex], attrType = str(tableIndex.types[attributeIndex]))
 
         #Gets attributes of each item.
         for tableItem in displayValues:

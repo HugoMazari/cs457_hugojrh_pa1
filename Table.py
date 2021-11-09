@@ -118,7 +118,7 @@ class Table:
         while os.path.exists(self.location + "//" + fileName + self.itemExtension) and isCreate == 'x':
                 if "_" in fileName:
                     copyVersion = fileName.split("_")[1]
-                    fileName = fileName.replace("_{version}".format(version = copyVersion), "_{version}".format(verion = str(int(copyVersion) + 1)))
+                    fileName = fileName.replace("_{version}".format(version = copyVersion), "_{version}".format(version = str(int(copyVersion) + 1)))
                 else:
                     fileName += "_1"
         templateFile = open(self.location + "//" + fileName + self.itemExtension, isCreate)
