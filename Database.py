@@ -162,8 +162,9 @@ class Database:
             tableName = userArgs.split()[0]
             if tableName in self.tableNames:
                 tableIndex = self.tableNames.index(tableName)
-                selectedTable = self.tables[tableIndex] 
-                selectedValues = selectedTable.Where(userArgs.split(" where ")[1].split())
+                selectedTable = self.tables[tableIndex]
+                tableFilters = userArgs.split(" where ")[1].split()
+                selectedValues = selectedTable.Where(self.FormatVariablesForWhere(tableFilters))
                 targetedAttrAndNewValue = userArgs.replace("set","where").split(" where ")[1].split()
                 targetedAttr = targetedAttrAndNewValue[0]
                 newValue = targetedAttrAndNewValue[2].replace("\'","")
@@ -173,40 +174,68 @@ class Database:
 
     #display table
     def displayTable(self, joinType, tableIndex, columns, hasWhere):
-        #Variables
+        #Variables                if tableIndexAndNumbers(
         returnString = "" #Strings to Return
         attributeIndexes = []
         displayValues = []
         whereRequirements = []
-        
+        tableNickNames = []
         #Checks if filters exist
         if len(hasWhere) == 1:
-            for index in tableIndex:
-                displayValues.append(self.tables[index].items)
+            if joinType == ", " or joinType == "default":
+                for index in tableIndex:
+                    displayValues.append(self.tables[index].items)
+            else:
+                return "!Syntax Error. All joins must have at least one ON."
         else:
+            tableAndNicknames = hasWhere[0].split(joinType)
+            for table in tableAndNicknames:
+                tableNickNames.append(table.split(" ")[1])
             whereRequirements = hasWhere[1].split()
-            displayValues = tableIndex.Where()
+
+            if joinType == ", " or joinType == "inner join":
+                whereArgs = self.FormatVariablesForWhere(whereRequirements, [tableIndex, tableNickNames])
+                displayValues.append(self.tables[tableIndex[0]].Where(whereArgs))
+                whereRequirements.reverse()
+                whereArgs = self.FormatVariablesForWhere(whereRequirements,[tableIndex, tableNickNames])
+                displayValues.append(self.tables[tableIndex[1]].Where(whereArgs))
+                #still rendered uneven. Make function to compare the two lists, and extend the shorter one to match.
+
+            elif joinType == " left outer join ":
+                displayValues.append(self.tables[tableIndex[0]].items)
+                whereArgs = self.FormatVariablesForWhere(whereRequirements.reverse(),[tableIndex, tableNickNames])
+                displayValues += self.tables[tableIndex[1]].Where(whereArgs)
+
+            #Single table
+            else:
+                whereArgs = self.FormatVariablesForWhere(whereRequirements, [tableIndex, tableNickNames])
+                displayValues.append(self.tables[tableIndex[0]].Where(whereArgs))
 
         #Continue from here
         #Gets index of each attribute desired.
-        for currAttribute in tableIndex.attributes:
-            if currAttribute in columns:
-                attributeIndexes.append(tableIndex.attributes.index(currAttribute))
+        for index in tableIndex:
+            tableCurrAttr = []
+            for currAttribute in self.tables[index].attributes:
+                if currAttribute in columns[index]:
+                    tableCurrAttr.append(self.tables[index].attributes.index(currAttribute))
+            attributeIndexes.append(tableCurrAttr)
         
         #Gets attribute name and type of table.
-        for attributeIndex in attributeIndexes:
-            if attributeIndex == attributeIndexes[-1]:
-                returnString += "{attrName} {attrType}\n".format(attrName = tableIndex.attributes[attributeIndex], attrType = str(tableIndex.types[attributeIndex]))
-            else:
-                returnString += "{attrName} {attrType} | ".format(attrName = tableIndex.attributes[attributeIndex], attrType = str(tableIndex.types[attributeIndex]))
+        for tableAttrIndex in attributeIndexes:
+            for attributeIndex in tableAttrIndex:
+                if tableAttrIndex == tableAttrIndex[-1] and attributeIndex == attributeIndex[-1]:
+                    returnString += "{attrName} {attrType}\n".format(attrName = tableIndex.attributes[attributeIndex], attrType = str(tableIndex.types[attributeIndex]))
+                else:
+                    returnString += "{attrName} {attrType} | ".format(attrName = tableIndex.attributes[attributeIndex], attrType = str(tableIndex.types[attributeIndex]))
 
         #Gets attributes of each item.
-        for tableItem in displayValues:
-            for attributeIndex in attributeIndexes:
-                if attributeIndex == attributeIndexes[-1]:
-                    returnString += "{displayItem}\n".format(displayItem = tableItem[attributeIndex])
-                else:
-                    returnString += "{displayItem} | ".format(displayItem = tableItem[attributeIndex])
+        for tableIndex in displayValues:
+            for tableItem in tableIndex:
+                for attributeIndex in attributeIndexes:
+                    if attributeIndex == attributeIndexes[-1] and tableIndex == displayValues[-1]:
+                        returnString += "{displayItem}\n".format(displayItem = tableItem[attributeIndex])
+                    else:
+                        returnString += "{displayItem} | ".format(displayItem = tableItem[attributeIndex])
         return returnString
 
     #Determines what kind of join it is.
@@ -215,11 +244,45 @@ class Database:
         if ", " in tablesSelected:
             joinType = ", "
         elif "inner" in tablesSelected:
-            joinType = "inner join"
+            joinType = " inner join "
         elif "left outer" in tablesSelected:
             joinType = " left outer join "
         elif "right outer" in tablesSelected:
             joinType = " right outer join "
         else:
-            joinType = " default "
+            joinType = "default"
         return joinType
+
+    def FormatVariablesForWhere(self, userArgs, tableIndexAndNumbers = None):
+        """
+        Please don't forget the tableIndexAndNumber if tables are defined with names.
+        """
+        formattedVariables = []
+        tableNameRe = re.compile("^[a-zA-Z]*\.")
+        if len(userArgs) == 3:
+            #The target of the item
+            if tableNameRe.match(userArgs[0]) != None:
+                tableAndItem = userArgs[0].split(".") #Turns T.Item to [T, Item]
+                formattedVariables.append(tableAndItem[1])
+            else:
+                formattedVariables.append(userArgs[0])
+
+            #Don't mess with comparison variable
+            formattedVariables.append(userArgs[1])
+
+            if tableNameRe.match(userArgs[2]) != None:
+                tableAndItem = userArgs[2].split(".") #Turns T.Item to [T, Item]
+                tableNameIndex = tableIndexAndNumbers[1].index(tableAndItem[0])
+                tableIndex = tableIndexAndNumbers[0][tableNameIndex]
+                if tableAndItem[1] in self.tables[tableIndex].attributes:
+                    attributeIndex = self.tables[tableIndex].attributes.index(tableAndItem[1])
+                    attributeList = []
+                    for item in self.tables[tableIndex].items:
+                        attributeList.append(item[attributeIndex])
+                    formattedVariables.append(attributeList)
+                else:
+                    print("!{compareType} is an invalid comparison.".format(compareType = userArgs[2]))
+        return formattedVariables
+
+
+    

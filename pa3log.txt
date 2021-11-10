@@ -14,3 +14,5 @@ Else if some kind of join
         if inner join, filter
         else if outer join, don't filter first list then filter second one
 
+Select nearly finished. Just need to adjust actual display to work with all these items. Then, for both types, make function that
+will find the smaller list of the comparison, then expand smaller list with matching duplicates. Then the project should be done.

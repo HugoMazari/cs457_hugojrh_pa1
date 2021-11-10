@@ -128,38 +128,53 @@ class Table:
     #Determine which values to display.
     def Where(self, userArgs):
         filteredItems = []
+        comparativeValues = []
         if userArgs[0] in self.attributes:
             attrIndex = self.attributes.index(userArgs[0])
-            comparativeValue = userArgs[2].replace("\'","")
+            if type(userArgs[2]) is list:
+                for args in userArgs[2]:
+                    comparativeValues.append(args.replace("\'",""))
+            else:
+                comparativeValues.append(userArgs[2].replace("\'",""))
             for item in self.items:
                 if userArgs[1] == "=":
-                    if item[attrIndex] == comparativeValue:
-                        filteredItems.append(item)
-                    else:
-                        set(comparativeValue).symmetric_difference(set(item[attrIndex]))
+                    for comparativeValue in comparativeValues:
+                        if item[attrIndex] == comparativeValue:
+                            filteredItems.append(item)
+                            break
                 elif userArgs[1] == "!=":
-                    if str(item[attrIndex]) != comparativeValue:
-                        filteredItems.append(item)
+                    for comparativeValue in comparativeValues:
+                        if str(item[attrIndex]) != comparativeValue:
+                            filteredItems.append(item)
+                            break
                 elif userArgs[1] == "<":
                     if re.match("^[\d]*.[\d]*$", item[attrIndex]):
-                        if re.match("^[\d]*.[\d]*$", comparativeValue):
-                            if float(item[attrIndex]) < float(comparativeValue):
-                                filteredItems.append(item)
+                        for comparativeValue in comparativeValues:
+                            if re.match("^[\d]*.[\d]*$", comparativeValue):
+                                if float(item[attrIndex]) < float(comparativeValue):
+                                    filteredItems.append(item)
+                                    break
                 elif userArgs[1] == ">":
                     if re.match("^[\d]*.[\d]*$", item[attrIndex]):
-                        if re.match("^[\d]*.[\d]*$", comparativeValue):
-                            if float(item[attrIndex]) > float(comparativeValue):
-                                filteredItems.append(item)
+                        for comparativeValue in comparativeValues:
+                            if re.match("^[\d]*.[\d]*$", comparativeValue):
+                                if float(item[attrIndex]) > float(comparativeValue):
+                                    filteredItems.append(item)
+                                    break
                 elif userArgs[1] == "<=":
                     if re.match("^[\d]*.[\d]*$", item[attrIndex]):
-                        if re.match("^[\d]*.[\d]*$", comparativeValue):
-                            if float(item[attrIndex]) < float(comparativeValue):
-                                filteredItems.append(item)
+                        for comparativeValue in comparativeValues:
+                            if re.match("^[\d]*.[\d]*$", comparativeValue):
+                                if float(item[attrIndex]) < float(comparativeValue):
+                                    filteredItems.append(item)
+                                    break
                 elif userArgs[1] == ">=":
                     if re.match("^[\d]*.[\d]*$", item[attrIndex]):
-                        if re.match("^[\d]*.[\d]*$", comparativeValue):
-                            if float(item[attrIndex]) < float(comparativeValue):
-                                filteredItems.append(item)
+                        for comparativeValue in comparativeValues:
+                            if re.match("^[\d]*.[\d]*$", comparativeValue):
+                                if float(item[attrIndex]) < float(comparativeValue):
+                                    filteredItems.append(item)
+                                    break
                 else:
                     print("!{compareType} is an invalid comparison.".format(compareType = userArgs[1]))
         return filteredItems

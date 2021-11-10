@@ -212,8 +212,10 @@ def KeywordDetection(userInput):
         if word != userInput.split()[-1]:
             returnValue += " "
     returnValue = returnValue.replace(",", ", ")
+    returnValue = re.sub("\s{1,};$", ";", returnValue)
     returnValue = re.sub(",\s{2,}", ", ", returnValue)
     returnValue = re.sub("\s{1,}\(", "(", returnValue)
+    returnValue = returnValue.replace("\n", "")
     return returnValue
 
 
