@@ -193,7 +193,7 @@ class Database:
                 tableNickNames.append(table.split(" ")[1])
             whereRequirements = hasWhere[1].split()
 
-            if joinType == ", " or joinType == "inner join":
+            if joinType == ", " or joinType == " inner join ":
                 whereArgs = self.FormatVariablesForWhere(whereRequirements, [tableIndex, tableNickNames])
                 displayValues.append(self.tables[tableIndex[0]].Where(whereArgs))
                 whereRequirements.reverse()
@@ -203,15 +203,19 @@ class Database:
 
             elif joinType == " left outer join ":
                 displayValues.append(self.tables[tableIndex[0]].items)
-                whereArgs = self.FormatVariablesForWhere(whereRequirements.reverse(),[tableIndex, tableNickNames])
-                displayValues += self.tables[tableIndex[1]].Where(whereArgs)
+                whereRequirements.reverse()
+                whereArgs = self.FormatVariablesForWhere(whereRequirements,[tableIndex, tableNickNames])
+                displayValues.append(self.tables[tableIndex[1]].Where(whereArgs))
 
             #Single table
             else:
                 whereArgs = self.FormatVariablesForWhere(whereRequirements, [tableIndex, tableNickNames])
                 displayValues.append(self.tables[tableIndex[0]].Where(whereArgs))
 
-        #Continue from here
+        if len(displayValues) != 1:
+            #Extend shorter list
+            displayValues = self.MatchItems(joinType, displayValues, [tableIndex, tableNickNames], whereRequirements)
+
         #Gets index of each attribute desired.
         for index in tableIndex:
             tableCurrAttr = []
@@ -221,21 +225,21 @@ class Database:
             attributeIndexes.append(tableCurrAttr)
         
         #Gets attribute name and type of table.
-        for tableAttrIndex in attributeIndexes:
-            for attributeIndex in tableAttrIndex:
-                if tableAttrIndex == tableAttrIndex[-1] and attributeIndex == attributeIndex[-1]:
-                    returnString += "{attrName} {attrType}\n".format(attrName = tableIndex.attributes[attributeIndex], attrType = str(tableIndex.types[attributeIndex]))
+        for tableAttrIndex in tableIndex:
+            for attributeIndex in attributeIndexes[tableAttrIndex]:
+                if tableAttrIndex == tableIndex[-1] and attributeIndex == attributeIndexes[tableAttrIndex][-1]:
+                    returnString += "{attrName} {attrType}\n".format(attrName = self.tables[tableAttrIndex].attributes[attributeIndex], attrType = str(self.tables[tableAttrIndex].types[attributeIndex]))
                 else:
-                    returnString += "{attrName} {attrType} | ".format(attrName = tableIndex.attributes[attributeIndex], attrType = str(tableIndex.types[attributeIndex]))
+                    returnString += "{attrName} {attrType} | ".format(attrName = self.tables[tableAttrIndex].attributes[attributeIndex], attrType = str(self.tables[tableAttrIndex].types[attributeIndex]))
 
         #Gets attributes of each item.
-        for tableIndex in displayValues:
-            for tableItem in tableIndex:
-                for attributeIndex in attributeIndexes:
-                    if attributeIndex == attributeIndexes[-1] and tableIndex == displayValues[-1]:
-                        returnString += "{displayItem}\n".format(displayItem = tableItem[attributeIndex])
+        for x in range(0, len(displayValues[0])):
+            for tableAttrIndex in range(0, len(displayValues)):
+                for attributeIndex in attributeIndexes[tableAttrIndex]:
+                    if displayValues[tableAttrIndex] == displayValues[-1] and attributeIndex == attributeIndexes[tableAttrIndex][-1]:
+                        returnString += "{displayItem}\n".format(displayItem = displayValues[tableAttrIndex][x][attributeIndex])
                     else:
-                        returnString += "{displayItem} | ".format(displayItem = tableItem[attributeIndex])
+                        returnString += "{displayItem} | ".format(displayItem = displayValues[tableAttrIndex][x][attributeIndex])
         return returnString
 
     #Determines what kind of join it is.
@@ -284,5 +288,60 @@ class Database:
                     print("!{compareType} is an invalid comparison.".format(compareType = userArgs[2]))
         return formattedVariables
 
+    def MatchItems(self, joinType, displayValues, tableIndexAndNicknames, WhereRequirements):
+        #Variables
+        longListIndex = None
+        shorterListIndex = None
+        attrIndex = []
+        emptyItem = []
+        
+        #Nearly done, just need to figure out the outer join stuff. Possibly look for 
+        if len(displayValues[0]) != len(displayValues[1]):
+            #Determine shorter list
+            if len(displayValues[0]) < len(displayValues[1]):
+                shorterListIndex = 0
+                longListIndex = 1
+            else:
+                shorterListIndex = 1
+                longListIndex = 0
+            
+        elif "outer" in joinType:
+            if "left" in joinType:
+                shorterListIndex = 0
+                longListIndex = 1
 
+            else:
+                shorterListIndex = 1
+                longListIndex = 0
+                
+        if longListIndex != None and shorterListIndex != None:
+            #Make empty item for outer joins
+            for x in range(0, len(displayValues[shorterListIndex][0])):
+                emptyItem.append("")
+
+            #Get attribute index of each filter.
+            for item in WhereRequirements:
+                if item != WhereRequirements[1]:
+                    nicknameAndFilter = item.split(".")
+                    tableIndex = tableIndexAndNicknames[0][tableIndexAndNicknames[1].index(nicknameAndFilter[0])]
+                    attrIndex.append(self.tables[tableIndex].attributes.index(nicknameAndFilter[1]))
+
+            #cycle through longer list
+            for longListItem in displayValues[longListIndex]:
+                for shortListItem in displayValues[shorterListIndex]:
+                    #If match found, add in same position as long list item
+                    if longListItem[attrIndex[longListIndex]] == shortListItem[attrIndex[shorterListIndex]]:
+                        if displayValues[longListIndex].index(longListItem) != displayValues[shorterListIndex].index(shortListItem):
+                            displayValues[shorterListIndex].insert(displayValues[longListIndex].index(longListItem), shortListItem)
+                        break
+                    #else add blank elements
+                    elif shortListItem == displayValues[shorterListIndex][-1] and joinType != " inner join " and joinType != ", ":
+                        displayValues[shorterListIndex].insert(displayValues[longListIndex].index(longListItem), emptyItem)
+                        break
+                if displayValues[longListIndex] < displayValues[shorterListIndex]:
+                    temp = longListIndex
+                    longListIndex = shorterListIndex
+                    shorterListIndex = temp
+
+        return displayValues
     
