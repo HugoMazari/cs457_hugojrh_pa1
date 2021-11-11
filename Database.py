@@ -164,7 +164,7 @@ class Database:
                 tableIndex = self.tableNames.index(tableName)
                 selectedTable = self.tables[tableIndex]
                 tableFilters = userArgs.split(" where ")[1].split()
-                selectedValues = selectedTable.Where(self.FormatVariablesForWhere(tableFilters))
+                selectedValues = selectedTable.Where(tableFilters)
                 targetedAttrAndNewValue = userArgs.replace("set","where").split(" where ")[1].split()
                 targetedAttr = targetedAttrAndNewValue[0]
                 newValue = targetedAttrAndNewValue[2].replace("\'","")
@@ -326,22 +326,27 @@ class Database:
                     tableIndex = tableIndexAndNicknames[0][tableIndexAndNicknames[1].index(nicknameAndFilter[0])]
                     attrIndex.append(self.tables[tableIndex].attributes.index(nicknameAndFilter[1]))
 
+            listSwapped = True
             #cycle through longer list
-            for longListItem in displayValues[longListIndex]:
-                for shortListItem in displayValues[shorterListIndex]:
-                    #If match found, add in same position as long list item
-                    if longListItem[attrIndex[longListIndex]] == shortListItem[attrIndex[shorterListIndex]]:
-                        if displayValues[longListIndex].index(longListItem) != displayValues[shorterListIndex].index(shortListItem):
-                            displayValues[shorterListIndex].insert(displayValues[longListIndex].index(longListItem), shortListItem)
+            while listSwapped == True:
+                listSwapped = False
+                for longListItem in displayValues[longListIndex]:
+                    for shortListItem in displayValues[shorterListIndex]:
+                        #If match found, add in same position as long list item
+                        if longListItem[attrIndex[longListIndex]] == shortListItem[attrIndex[shorterListIndex]]:
+                            if displayValues[longListIndex].index(longListItem) != displayValues[shorterListIndex].index(shortListItem):
+                                displayValues[shorterListIndex].insert(displayValues[longListIndex].index(longListItem), shortListItem)
+                            break
+                        #else add blank elements
+                        elif shortListItem == displayValues[shorterListIndex][-1] and joinType != " inner join " and joinType != ", ":
+                            displayValues[shorterListIndex].insert(displayValues[longListIndex].index(longListItem), emptyItem)
+                            break
+                    if len(displayValues[longListIndex]) < len(displayValues[shorterListIndex]):
+                        temp = longListIndex
+                        longListIndex = shorterListIndex
+                        shorterListIndex = temp
+                        listSwapped = True
                         break
-                    #else add blank elements
-                    elif shortListItem == displayValues[shorterListIndex][-1] and joinType != " inner join " and joinType != ", ":
-                        displayValues[shorterListIndex].insert(displayValues[longListIndex].index(longListItem), emptyItem)
-                        break
-                if displayValues[longListIndex] < displayValues[shorterListIndex]:
-                    temp = longListIndex
-                    longListIndex = shorterListIndex
-                    shorterListIndex = temp
 
         return displayValues
     
