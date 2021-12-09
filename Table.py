@@ -25,9 +25,9 @@ class Table:
                 self.IdentifyTypes(pair.split()[1])
                 self.attributes.append(pair.split()[0])
             for file in os.listdir(self.location):
-                if file.find(self.itemExtension) and file != self.templateName:
+                if file.find(self.itemExtension) != -1 and file != self.templateName:
                     itemFile = open(self.location +"//" + file, "r")
-                    fileContent = itemFile.readline()
+                    fileContent = itemFile.readline().replace("\n", "")
                     self.items.append(fileContent.split(" | "))
             #arg = //DatabaseInventory//Database//Table.htb
 
@@ -185,6 +185,7 @@ class Table:
             oldFile = ""
             for values in target:
                 oldFile += values
+            oldFile.replace("\n", "")
             targetIndex = self.items.index(target)
             attrIndex = self.attributes.index(attrTarget)
             self.items[targetIndex][attrIndex] = newVal

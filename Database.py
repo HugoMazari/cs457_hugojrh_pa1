@@ -26,7 +26,7 @@ class Database:
         else:
             self.name = args[0].split(";")[0]
             self.location = self.CreateDatabase(args[1] + "//")
-            
+
     #Makes the actual database directory.
     def CreateDatabase(self, databaseInventory):
         os.mkdir(databaseInventory + self.name + self.extension)
@@ -40,6 +40,30 @@ class Database:
         for table in self.tables:
             self.tablesNames.append(table.name)
     
+    #Checks if there is a transaction in progress aside from the one calling the function.
+    def CheckForForeignTransaction(self, name, transLock, mainDBLocation):
+        hasForeignLock = False
+        if name in self.tableNames:
+            tableIndex = self.tableNames.index(name)
+            tableDir = self.tables[tableIndex].location
+            tableDir = re.sub("^\S*\//" + self.name, mainDBLocation + "//" + self.name, tableDir)
+            for file in os.listdir(tableDir):
+                if file.endswith(".lk"):
+                    if transLock == None:
+                        hasForeignLock = True
+                        break
+                    elif file.find(transLock) == -1:
+                        hasForeignLock = True
+                        break
+
+    def CreateLock(self, name, transLock, mainDBLocation):
+        if name in self.tableNames:
+            tableIndex = self.tableNames.index(name)
+            tableDir = self.tables[tableIndex].location
+            transLockFile = tableDir + "//" + transLock +".lk"
+            transLockFile = re.sub("^\S*\//" + self.name, mainDBLocation + "//" + self.name, transLockFile)
+            open(transLockFile, "x")
+
     #Ensures user calling create table will not cause issues
     def CreateTable(self, userArgs):
         if userArgs.split()[1].split("(")[0] in self.tableNames:
@@ -101,26 +125,31 @@ class Database:
             print(displayString)
 
     #Alters table based on user input.
-    def AlterTable(self, userArgs):
-        if len(userArgs.split()) >= 4:
+    def AlterTable(self, userArgs, transLock, transLockLocation):
+        if len(userArgs.split()) >= 4:            
             if userArgs.split()[1] in self.tableNames:
-                tableIndex = self.tableNames.index(userArgs.split()[1])
-                if "add" in userArgs:
-                    tableHolder = self.tables[tableIndex]
-                    file = open(tableHolder.location + "//" + tableHolder.templateName, "r")
-                    currentList = file.read()
-                    file.close()
-                    newItems = userArgs.split(" add ")[1].replace("\n","")
-                    for pair in newItems.split(", "):
-                        tableHolder.IdentifyTypes(pair.split()[1])
-                        tableHolder.attributes.append(pair.split()[0])
-                        currentList += " | {tbAttr} {tbType}".format(tbType = tableHolder.types[-1], tbAttr = tableHolder.attributes[-1])
-                    file = open(tableHolder.location + "//" + tableHolder.templateName, "w")
-                    file.write(currentList)
-                    file.close()
-                print("Table {tbName} modified.".format(tbName = self.tableNames[tableIndex]))
+                if self.CheckForForeignTransaction(userArgs.split()[1], transLock, transLockLocation) == False:
+                    if transLock != None:
+                        self.CreateLock(userArgs.split()[1], transLock, transLockLocation)
+                    tableIndex = self.tableNames.index(userArgs.split()[1])
+                    if "add" in userArgs:
+                        tableHolder = self.tables[tableIndex]
+                        file = open(tableHolder.location + "//" + tableHolder.templateName, "r")
+                        currentList = file.read()
+                        file.close()
+                        newItems = userArgs.split(" add ")[1].replace("\n","")
+                        for pair in newItems.split(", "):
+                            tableHolder.IdentifyTypes(pair.split()[1])
+                            tableHolder.attributes.append(pair.split()[0])
+                            currentList += " | {tbAttr} {tbType}".format(tbType = tableHolder.types[-1], tbAttr = tableHolder.attributes[-1])
+                        file = open(tableHolder.location + "//" + tableHolder.templateName, "w")
+                        file.write(currentList)
+                        file.close()
+                    print("Table {tbName} modified.".format(tbName = self.tableNames[tableIndex]))
+                else:
+                    print("Error: Table {tblName} is locked!".format(tblName = userArgs.split()[1]))
             else:
-               print("!Failed to alter table {dbName} because it does not exist.".format(dbName = userArgs.split()[1].replace(";","")))
+                print("!Failed to alter table {dbName} because it does not exist.".format(dbName = userArgs.split()[1].replace(";","")))
         else:
             print("!Syntax Error. There are too few arguments.")
 
@@ -157,20 +186,26 @@ class Database:
                     os.remove(selectedTable.location + "//" + fileName + selectedTable.itemExtension)
                 print("{amountRemoved} records deleted.".format(amountRemoved = len(fufilledValues)))
 
-    def UpdateValues(self, userArgs):
+    def UpdateValues(self, userArgs, transLock, mainDBLocation):
         if userArgs.find("set") != -1 and userArgs.find("where") != -1:
             tableName = userArgs.split()[0]
             if tableName in self.tableNames:
-                tableIndex = self.tableNames.index(tableName)
-                selectedTable = self.tables[tableIndex]
-                tableFilters = userArgs.split(" where ")[1].split()
-                selectedValues = selectedTable.Where(tableFilters)
-                targetedAttrAndNewValue = userArgs.replace("set","where").split(" where ")[1].split()
-                targetedAttr = targetedAttrAndNewValue[0]
-                newValue = targetedAttrAndNewValue[2].replace("\'","")
-                selectedTable.ModifyValues(selectedValues, targetedAttr, newValue)
-                print("{amount} record{s} modified.".format(amount = len(selectedValues), \
-                    s = "s" if len(selectedValues) > 1 else ""))
+                if self.CheckForForeignTransaction(tableName, transLock, mainDBLocation) == False:
+                    if transLock != None:
+                        self.CreateLock(tableName, transLock, mainDBLocation)
+                    tableIndex = self.tableNames.index(tableName)
+                    selectedTable = self.tables[tableIndex]
+                    tableFilters = userArgs.split(" where ")[1].split()
+                    selectedValues = selectedTable.Where(tableFilters)
+                    targetedAttrAndNewValue = userArgs.replace("set","where").split(" where ")[1].split()
+                    targetedAttr = targetedAttrAndNewValue[0]
+                    newValue = targetedAttrAndNewValue[2].replace("\'","")
+                    selectedTable.ModifyValues(selectedValues, targetedAttr, newValue)
+                    print("{amount} record{s} modified.".format(amount = len(selectedValues), \
+                        s = "s" if len(selectedValues) > 1 else ""))
+                else:
+                    print("Error: Table {tblName} is locked!".format(tblName = tableName))
+
 
     #display table
     def displayTable(self, joinType, tableIndex, columns, hasWhere):

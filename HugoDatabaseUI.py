@@ -9,10 +9,14 @@ import shutil
 import sys
 import re
 #Global variables
-DatabaseStorage = "Hugo-s_Database_Directory"
+DatabaseStorage = "Hugo-s_Database_Directory"#1. Generate a unique ID for the instance.
 CurrentDatabase = None
 Databases = []
 DatabaseNames = []
+HasTransaction = False
+TransactionID = 0
+TransactionDatabaseStorage = None
+TransactionDatabases = []
 
 # Program entry point.
 def main():
@@ -37,9 +41,13 @@ def LoadDatabaseInventory():
     if ifFile != True:
         os.mkdir(DatabaseStorage)
     else:
-        allDatabases = os.listdir(DatabaseStorage)
+        filePath = DatabaseStorage
+        if HasTransaction == True:
+            filePath = TransactionDatabaseStorage
+
+        allDatabases = os.listdir(filePath)
         for database in allDatabases:
-                Databases.append(Database([database, DatabaseStorage], True))
+                Databases.append(Database([database, filePath], True))
         for database in Databases:
             DatabaseNames.append(database.name)
 
@@ -91,6 +99,7 @@ def Drop(userArgs):
     else:
         print("!Failed to delete {itemName} because it is not a supported item.".format(itemName = userArgs.split()[0]))
 
+
 #Chooses database to focus on.
 def Use(userArgs):
     global CurrentDatabase
@@ -110,7 +119,7 @@ def Select(userArgs):
 #Alters table attributes
 def Alter(userArgs):
     if CurrentDatabase != None:
-        Databases[CurrentDatabase].AlterTable(userArgs.replace(";",""))
+        Databases[CurrentDatabase].AlterTable(userArgs.replace(";",""), DatabaseStorage, TransactionDatabaseStorage, DatabaseStorage)
     else:
         print("!No database selected.")
 
@@ -131,12 +140,91 @@ def Delete(userArgs):
 #updates values in table
 def Update(userArgs):
     if CurrentDatabase != None:
-        Databases[CurrentDatabase].UpdateValues(userArgs.replace(";",""))
+        Databases[CurrentDatabase].UpdateValues(userArgs.replace(";",""), TransactionDatabaseStorage, DatabaseStorage)
     else:
         print("!No database selected.")
 
+#Commits changes from a transaction
+def Commit():
+    global Databases, TransactionDatabaseStorage, TransactionDatabases, TransactionID, HasTransaction
+    if HasTransaction == True:
+        if CheckTransactionForEquality() == False:
+            print("Transaction committed.")
+        else:
+            print("Transaction abort.")
+        shutil.rmtree(DatabaseStorage)
+        shutil.move(TransactionDatabaseStorage, DatabaseStorage)
+        TransactionDatabaseStorage = None
+        TransactionID = 0
+        TransactionDatabases = []
+        HasTransaction = False
+
+#Checks if transaction database matches main database
+def CheckTransactionForEquality():
+    if len(Databases) == len(TransactionDatabases):
+        for DatabaseIndex in range(len(Databases)):
+            currDatabase = Databases[DatabaseIndex]
+            currTransDatabase = TransactionDatabases[DatabaseIndex]
+            if len(currDatabase.tables) == len(currTransDatabase.tables):
+                for TableIndex in range(len(currDatabase.tables)):
+                    currTable = currDatabase.tables[TableIndex]
+                    currTransTable = currTransDatabase.tables[TableIndex]
+                    if len(currTable.types) == len(currTransTable.types):
+                        for typeIndex in range(len(currTable.types)):
+                            if currTable.types[typeIndex] != currTransTable.types[typeIndex]:
+                                return False
+                    else:
+                         return False
+                    if len(currTable.attributes) == len(currTransTable.attributes):
+                        for attrIndex in range(len(currTable.attributes)):
+                            if currTable.attributes[attrIndex] != currTransTable.attributes[attrIndex]:
+                                return False
+                    else:
+                        return False
+                    if len(currTable.items) == len(currTransTable.items):
+                        for itemsIndex in range(len(currTable.items)):
+                            currItem = currTable.items[itemsIndex]
+                            currTransItem = currTransTable.items[itemsIndex]
+                            if len(currItem) == len(currTransItem):
+                                for valIndex in range(len(currItem)):
+                                    if currTable.items[valIndex] != currTransTable.items[valIndex]:
+                                        return False
+                            else:
+                                return False
+                    else:
+                        return False
+            else:
+                return False
+    else:
+        return False
+    return True
+
+#Begins a transaction
+def BeginTransaction():
+    global Databases, TransactionDatabaseStorage, TransactionDatabases, TransactionID, HasTransaction
+    HasTransaction = True
+    idDetermined = False
+    TransactionDatabaseStorage = "TempDB"
+    while idDetermined == False:
+        idDetermined = not os.path.exists(TransactionDatabaseStorage + str(TransactionID))
+        if idDetermined == True:
+            TransactionDatabaseStorage = TransactionDatabaseStorage + str(TransactionID)
+        else:
+            TransactionID += 1
+    shutil.copytree(DatabaseStorage, TransactionDatabaseStorage)
+    allDatabases = os.listdir(TransactionDatabaseStorage)
+    for database in allDatabases:
+        TransactionDatabases.append(Database([database, TransactionDatabaseStorage], True))
+    temp = TransactionDatabases
+    TransactionDatabases = Databases
+    Databases = temp
+    print("Transaction starts.")
+
 #Determines user's choice.
 def SqlChoices(commandAndArgs):
+    global Databases
+    Databases = []
+    LoadDatabaseInventory()
     userCommand = commandAndArgs.split(" ", 1)[0]
     if userCommand == "quit;":
         print("All done.")
@@ -160,8 +248,13 @@ def SqlChoices(commandAndArgs):
                 Delete(userArgs)
             elif userCommand == "update":
                 Update(userArgs)
+            elif userCommand == "begin":
+                BeginTransaction()
             else:
                 print("!Unknown command.")
+
+        elif commandAndArgs == "commit;":
+            Commit()
         else:
             print("!Invalid syntax. All commands must have at least one argument.")
 
@@ -198,7 +291,11 @@ def ReadFile():
             SqlChoices(KeywordDetection(fileCommand))
         fileCommand = ""
         while re.search("^[\" \"]*--|;$|^[\" \"]*\.exit", fileCommand.lower()) == None:
-            fileCommand += " " + file.readline().replace("\n", "")
+            if re.search("; --.*$", fileCommand) == None:
+                fileCommand += " " + file.readline().replace("\n", "")
+            else:
+                fileCommand = re.sub("; --.*$", ";", fileCommand)
+
     print("All done.")
 
 #Detects if words are keywords or names
@@ -213,8 +310,10 @@ def KeywordDetection(userInput):
             returnValue += " "
     returnValue = returnValue.replace(",", ", ")
     returnValue = re.sub("\s{1,};$", ";", returnValue)
+    returnValue = re.sub("\s{1,};$", ";", returnValue)
     returnValue = re.sub(",\s{2,}", ", ", returnValue)
     returnValue = re.sub("\s{1,}\(", "(", returnValue)
+    returnValue = re.sub("; --.*$", ";", returnValue)
     returnValue = returnValue.replace("\n", "")
     return returnValue
 

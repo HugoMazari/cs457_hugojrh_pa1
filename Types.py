@@ -22,4 +22,4 @@ class Keywords:
                         "char", "varchar", "text", "int", \
                             "bigint", "smallint", "float", \
                                 "money", "datetime", "left outer join", "inner join", \
-                                    "on"]
+                                    "on", "begin", "transaction", "commit"]
